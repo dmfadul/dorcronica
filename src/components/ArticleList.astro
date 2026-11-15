@@ -1,0 +1,27 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { dataLonga, dataIso } from '../lib/format';
+interface Props { artigos: CollectionEntry<'artigos'>[]; titulo?: 'h2' | 'h3'; }
+const { artigos, titulo: H = 'h3' } = Astro.props;
+---
+<ol class="articles" role="list">
+  {artigos.map((a) => (
+    <li>
+      <time datetime={dataIso(a.data.publicadoEm)}>{dataLonga(a.data.publicadoEm)}</time>
+      <H class="a-title"><a href={`/artigos/${a.id}/`}>{a.data.titulo}</a></H>
+      <p>{a.data.descricao}</p>
+    </li>
+  ))}
+</ol>
+<style>
+  .articles { list-style: none; padding: 0; margin: 0; display: grid; }
+  li { display: grid; gap: 0.35rem 2.5rem; padding-block: 1.6rem; border-top: 1px solid var(--line); position: relative; }
+  li:last-child { border-bottom: 1px solid var(--line); }
+  @media (min-width: 860px) { li { grid-template-columns: 11rem minmax(0, 1fr); } li p { grid-column: 2; } }
+  time { font-size: 0.85rem; color: var(--muted); padding-top: 0.35rem; }
+  .a-title { font-size: var(--step-2); margin: 0; }
+  .a-title a { text-decoration: none; }
+  .a-title a::after { content: ''; position: absolute; inset: 0; }
+  li:hover .a-title a { text-decoration: underline; text-decoration-thickness: 1px; }
+  p { margin: 0; color: var(--ink-soft); max-width: 65ch; }
+</style>

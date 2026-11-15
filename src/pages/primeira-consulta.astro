@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import { site, whatsappPrincipal } from '../config/site';
+import { linkWhatsapp } from '../lib/format';
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Primeira consulta', href: '/primeira-consulta/' }];
+const passos = [
+  ['Antes', 'Separe exames e laudos (inclusive os antigos), a lista de remédios que você usa e já usou para a dor, e relatórios de outros médicos. Se puder, registre a dor por uma ou duas semanas no Diário da dor.'],
+  ['A conversa', 'O médico vai querer saber onde dói, como é a dor, quando começou, o que piora e o que melhora, o que já foi tentado — e como ela afeta o sono, o trabalho, o humor e a convivência. Não existe detalhe irrelevante.'],
+  ['O exame', 'Exame físico e neurológico, com atenção às regiões doloridas, à força, à sensibilidade e aos movimentos. É ele que dá sentido aos exames de imagem.'],
+  ['O diagnóstico', 'A dor é classificada pelo seu mecanismo — nociceptiva, neuropática, nociplástica ou mista — e pela provável origem. Às vezes é preciso um exame ou um bloqueio diagnóstico para confirmar.'],
+  ['O plano', 'Você sai com um plano por escrito: medicações e como usá-las, se há indicação de procedimento, reabilitação e quando retornar. Os objetivos são combinados com você, de forma realista.'],
+];
+---
+<BaseLayout titulo="Como é a primeira consulta" descricao="O que acontece na primeira consulta com o médico da dor, o que levar e o que esperar do plano de tratamento.">
+  <PageIntro trilha={trilha} eyebrow="Primeira consulta" titulo="O que esperar da primeira consulta" lead="Uma consulta para entender a sua dor por inteiro — e sair com um plano." />
+  <section class="section">
+    <div class="container">
+      <ol class="steps" role="list">
+        {passos.map(([t, d], i) => (
+          <li><span class="n">{String(i + 1).padStart(2, '0')}</span><h2>{t}</h2><p>{d}</p></li>
+        ))}
+      </ol>
+      <div class="next">
+        <a class="btn" href="/preparar-consulta/">Preparar minha consulta</a>
+        <a class="btn btn--ghost" href={linkWhatsapp(whatsappPrincipal.numero, site.contato.mensagemWhatsapp)} rel="noopener"><Icon nome="whatsapp" /> Agendar</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .steps li { display: grid; gap: 0.25rem 2rem; padding-block: 1.75rem; border-top: 1px solid var(--line); }
+  @media (min-width: 860px) { .steps li { grid-template-columns: 5rem 14rem 1fr; align-items: baseline; } }
+  .n { font: 400 2rem/1 var(--font-serif); color: var(--gold); }
+  h2 { font-size: var(--step-2); margin: 0; }
+  p { margin: 0; color: var(--ink-soft); max-width: 62ch; }
+  .next { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: var(--space-4); }
+</style>

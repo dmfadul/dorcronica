@@ -1,0 +1,95 @@
+---
+import { getCollection, getEntry, getEntries, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import MedicalNote from '../../components/MedicalNote.astro';
+import { site, whatsappPrincipal } from '../../config/site';
+import { dataLonga, dataIso, nomeCompleto, credencial, linkWhatsapp } from '../../lib/format';
+import { breadcrumbs, grafo } from '../../lib/jsonld';
+
+export async function getStaticPaths() {
+  return (await getCollection('artigos', (a) => !a.data.rascunho)).map((a) => ({ params: { slug: a.id }, props: { a } }));
+}
+const { a } = Astro.props;
+const { Content, headings } = await render(a);
+const d = a.data;
+const autor = (await getEntry(d.autor))!;
+const revisor = d.revisadoPor ? await getEntry(d.revisadoPor) : undefined;
+const condicoes = await getEntries(d.condicoes);
+const url = new URL(`/artigos/${a.id}/`, Astro.site);
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Artigos', href: '/artigos/' }, { nome: d.titulo, href: url.pathname }];
+const sumario = headings.filter((h) => h.depth === 2);
+
+const jsonld = grafo(
+  {
+    '@type': 'BlogPosting',
+    '@id': `${url.href}#artigo`,
+    headline: d.titulo,
+    description: d.descricao,
+    datePublished: d.publicadoEm.toISOString(),
+    dateModified: (d.atualizadoEm ?? d.publicadoEm).toISOString(),
+    inLanguage: 'pt-BR',
+    mainEntityOfPage: url.href,
+    author: { '@type': 'Physician', '@id': new URL(`/equipe/${autor.id}/#medico`, Astro.site).href, name: nomeCompleto(autor.data) },
+    about: condicoes.map((c) => ({ '@type': 'MedicalCondition', name: c.data.titulo })),
+  },
+  breadcrumbs(trilha, Astro.site!),
+);
+---
+<BaseLayout titulo={d.seoTitulo ?? d.titulo} descricao={d.seoDescricao ?? d.descricao} tipo="article" publicadoEm={d.publicadoEm} jsonld={jsonld}>
+  <article>
+    <header class="head">
+      <div class="container">
+        <Breadcrumbs itens={trilha} />
+        <p class="eyebrow">{condicoes.map((c) => c.data.titulo).join(' · ') || 'Saúde e tratamento da dor'}</p>
+        <h1>{d.titulo}</h1>
+        <p class="lead">{d.descricao}</p>
+        <p class="meta">
+          Por <a href={`/equipe/${autor.id}/`}>{nomeCompleto(autor.data)}</a>
+          <span aria-hidden="true">·</span>
+          <time datetime={dataIso(d.publicadoEm)}>{dataLonga(d.publicadoEm)}</time>
+          {d.atualizadoEm && <><span aria-hidden="true">·</span> atualizado em <time datetime={dataIso(d.atualizadoEm)}>{dataLonga(d.atualizadoEm)}</time></>}
+        </p>
+      </div>
+    </header>
+
+    <div class="container body">
+      {sumario.length > 2 && (
+        <nav class="toc" aria-label="Neste artigo">
+          <p class="eyebrow">Neste artigo</p>
+          <ol>{sumario.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+        </nav>
+      )}
+      <div class="prose">
+        <Content />
+        <MedicalNote revisor={revisor && nomeCompleto(revisor.data)} data={d.revisadoEm && dataLonga(d.revisadoEm)} />
+        <div class="end">
+          <p class="author">{nomeCompleto(autor.data)} <span>{credencial(autor.data)}</span></p>
+          <div class="end-ctas">
+            <a class="btn" href={linkWhatsapp(whatsappPrincipal.numero, site.contato.mensagemWhatsapp)} rel="noopener">Agendar uma consulta</a>
+            <a class="link-arrow" href="/artigos/">Ver todos os artigos</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+<style>
+  .head { padding-block: clamp(2rem, 1.5rem + 3vw, 4.5rem) var(--space-4); border-bottom: 1px solid var(--line); }
+  .head h1 { font-size: var(--step-4); max-width: 22ch; }
+  .head .lead { max-width: 60ch; }
+  .meta { font-size: 0.9rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; }
+  .body { display: grid; gap: var(--space-4); padding-block: var(--space-4) var(--space-5); }
+  @media (min-width: 1100px) {
+    .body { grid-template-columns: 240px minmax(0, 1fr); column-gap: var(--space-5); }
+    .toc { position: sticky; top: calc(var(--header-h) + 1.5rem); align-self: start; }
+  }
+  .toc ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; font-size: 0.9rem; }
+  .toc a { text-decoration: none; color: var(--ink-soft); }
+  .toc a:hover { color: var(--ink); text-decoration: underline; }
+  .prose :global(h2) { scroll-margin-top: calc(var(--header-h) + 1rem); }
+  .end { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--line); display: grid; gap: var(--space-3); }
+  .author { font: 500 var(--step-1)/1.3 var(--font-serif); margin: 0; }
+  .author span { display: block; font: 400 0.82rem/1.4 var(--font-sans); color: var(--muted); margin-top: 0.2rem; }
+  .end-ctas { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+</style>

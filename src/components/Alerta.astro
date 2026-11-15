@@ -1,0 +1,26 @@
+---
+interface Props { itens?: string[]; titulo?: string; }
+const {
+  titulo = 'Quando não esperar a consulta',
+  itens = [
+    'Dor intensa e súbita, diferente de tudo o que você já sentiu',
+    'Dor com febre, perda de peso sem explicação ou histórico de câncer',
+    'Perda de força, alteração da fala, da visão ou da consciência',
+    'Perda do controle da urina ou das fezes',
+    'Dor no peito ou falta de ar',
+  ],
+} = Astro.props;
+---
+<aside class="alerta" aria-label={titulo}>
+  <p class="t"><span aria-hidden="true">!</span> {titulo}</p>
+  <ul>{itens.map((i) => <li>{i}</li>)}</ul>
+  <p class="cta">Procure um pronto atendimento ou ligue <a href="tel:192"><strong>192</strong></a> (SAMU).</p>
+</aside>
+<style>
+  .alerta { border: 1px solid #e3c4bb; background: #fbf1ee; border-radius: var(--radius); padding: 1.25rem 1.4rem; max-width: var(--reading); }
+  .t { font-weight: 700; color: var(--danger-ink); margin: 0 0 0.6rem; display: flex; align-items: center; gap: 0.6rem; }
+  .t span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--danger-ink); color: #fff; font-size: 0.8rem; }
+  ul { margin: 0 0 0.75rem; padding-left: 1.2rem; display: grid; gap: 0.3rem; font-size: 0.95rem; }
+  .cta { margin: 0; font-size: 0.95rem; }
+  .cta a { color: var(--danger-ink); }
+</style>

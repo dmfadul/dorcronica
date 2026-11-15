@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import FaqList from '../components/FaqList.astro';
+import { grafo, faqPage, breadcrumbs } from '../lib/jsonld';
+
+const faq = (await getCollection('faq')).sort((a, b) => a.data.ordem - b.data.ordem).map((f) => f.data);
+const temas = [...new Set(faq.map((f) => f.tema))];
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Perguntas frequentes', href: '/perguntas-frequentes/' }];
+---
+<BaseLayout titulo="Perguntas frequentes sobre dor crônica" descricao="Dor crônica tem cura? Procedimentos doem? Preciso de encaminhamento? Respostas diretas às dúvidas mais comuns." jsonld={grafo(faqPage(faq), breadcrumbs(trilha, Astro.site!))}>
+  <PageIntro trilha={trilha} eyebrow="Dúvidas comuns" titulo="Perguntas frequentes" />
+  <section class="section">
+    <div class="container">
+      <nav class="toc" aria-label="Temas">{temas.map((t) => <a href={`#${t.toLowerCase().replace(/\s+/g, '-')}`}>{t}</a>)}</nav>
+      {temas.map((t) => (
+        <div class="tema" id={t.toLowerCase().replace(/\s+/g, '-')}>
+          <h2>{t}</h2>
+          <FaqList itens={faq.filter((f) => f.tema === t)} />
+        </div>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .toc { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-4); }
+  .toc a { text-decoration: none; padding: 0.45rem 0.9rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 0.9rem; }
+  .toc a:hover { border-color: var(--ink); }
+  .tema { display: grid; gap: var(--space-2); margin-bottom: var(--space-5); }
+  @media (min-width: 960px) { .tema { grid-template-columns: 16rem 1fr; column-gap: var(--space-5); } }
+  .tema h2 { font-size: var(--step-2); }
+</style>

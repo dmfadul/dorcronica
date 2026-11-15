@@ -1,0 +1,234 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import { REGIOES } from '../lib/regioes';
+import { site } from '../config/site';
+
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Preparar minha consulta', href: '/preparar-consulta/' }];
+const regioes = Object.entries(REGIOES);
+const tempo = ['Menos de 1 mês', '1 a 3 meses', '3 a 12 meses', '1 a 5 anos', 'Mais de 5 anos'];
+const descritores = ['Queimação', 'Choque elétrico', 'Formigamento', 'Dormência', 'Pontada / facada', 'Latejante', 'Aperto / peso', 'Cólica', 'Frio doloroso', 'Dói ao toque leve ou com a roupa'];
+const padrao = ['Constante', 'Em crises', 'Pior pela manhã', 'Pior à noite', 'Piora com movimento', 'Piora parado / sentado'];
+const tentados = ['Analgésicos comuns', 'Anti-inflamatórios', 'Relaxantes musculares', 'Opioides (tramadol, codeína, morfina…)', 'Antidepressivos ou anticonvulsivantes para dor', 'Fisioterapia', 'Acupuntura', 'Infiltração ou bloqueio', 'Cirurgia', 'Psicoterapia'];
+const exames = ['Raio-X', 'Tomografia', 'Ressonância', 'Ultrassom', 'Eletroneuromiografia', 'Exames de sangue', 'Relatórios de outros médicos'];
+---
+<BaseLayout titulo="Preparar minha consulta" descricao="Organize em 5 minutos o que o médico da dor vai perguntar e imprima um resumo de uma página para levar à consulta.">
+  <PageIntro trilha={trilha} eyebrow="Ferramenta" titulo="Preparar minha consulta" lead="Responda o que conseguir — nada é obrigatório. O resumo ao lado se monta sozinho; no fim, imprima ou salve em PDF e leve para a consulta." />
+
+  <section class="section">
+    <div class="container tool">
+      <form id="prep" class="form no-print" autocomplete="off">
+        <p class="privacy"><strong>Privado:</strong> fica só neste aparelho. Nada é enviado — nem para nós.</p>
+
+        <fieldset>
+          <legend><span>1</span> Sobre você <small>(opcional)</small></legend>
+          <div class="row">
+            <label>Nome<input name="nome" /></label>
+            <label>Idade<input name="idade" inputmode="numeric" maxlength="3" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>2</span> Onde dói?</legend>
+          <div class="chips">{regioes.map(([id, nome]) => <label class="chip"><input type="checkbox" name="regioes" value={id} data-label={nome} /><span>{nome}</span></label>)}</div>
+          <label>Descreva com suas palavras (opcional)<input name="ondeTexto" placeholder="Ex.: começa na lombar e desce pela perna esquerda" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>3</span> Há quanto tempo?</legend>
+          <div class="chips">{tempo.map((t) => <label class="chip"><input type="radio" name="tempo" value={t} /><span>{t}</span></label>)}</div>
+          <label>Como começou? (opcional)<input name="inicio" placeholder="Ex.: depois de uma queda; sem motivo aparente; após cirurgia" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>4</span> Intensidade <small>de 0 (sem dor) a 10 (pior dor imaginável)</small></legend>
+          <label class="range">Em média, na última semana <output data-for="media">5</output><input type="range" name="media" min="0" max="10" value="5" /></label>
+          <label class="range">No pior momento <output data-for="pior">7</output><input type="range" name="pior" min="0" max="10" value="7" /></label>
+          <label class="range">No melhor momento <output data-for="melhor">3</output><input type="range" name="melhor" min="0" max="10" value="3" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>5</span> Como é a dor?</legend>
+          <div class="chips">{descritores.map((t) => <label class="chip"><input type="checkbox" name="tipo" value={t} /><span>{t}</span></label>)}</div>
+          <div class="chips">{padrao.map((t) => <label class="chip"><input type="checkbox" name="padrao" value={t} /><span>{t}</span></label>)}</div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>6</span> Quanto a dor atrapalha? <small>0 = nada, 10 = completamente</small></legend>
+          <label class="range">Sono <output data-for="sono">5</output><input type="range" name="sono" min="0" max="10" value="5" /></label>
+          <label class="range">Trabalho e atividades do dia a dia <output data-for="atividades">5</output><input type="range" name="atividades" min="0" max="10" value="5" /></label>
+          <label class="range">Humor <output data-for="humor">5</output><input type="range" name="humor" min="0" max="10" value="5" /></label>
+          <label>O que você deixou de fazer por causa da dor?<input name="deixou" placeholder="Ex.: caminhar, trabalhar sentado, brincar com os filhos" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>7</span> O que piora e o que melhora?</legend>
+          <div class="row">
+            <label>Piora com<input name="piora" /></label>
+            <label>Melhora com<input name="melhora" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>8</span> O que você já tentou?</legend>
+          <div class="chips">{tentados.map((t) => <label class="chip"><input type="checkbox" name="tentados" value={t} /><span>{t}</span></label>)}</div>
+          <label>Remédios que usa hoje (nome e dose, se souber)<textarea name="remedios" rows="3"></textarea></label>
+          <label>Alergias a medicamentos<input name="alergias" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>9</span> O que vou levar</legend>
+          <div class="chips">{exames.map((t) => <label class="chip"><input type="checkbox" name="exames" value={t} /><span>{t}</span></label>)}</div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>10</span> Minhas perguntas para o médico</legend>
+          <textarea name="perguntas" rows="4" placeholder="Ex.: Posso continuar fazendo academia? Esse remédio vicia?"></textarea>
+        </fieldset>
+
+        <div class="buttons">
+          <button type="button" class="btn" data-print>Imprimir ou salvar PDF</button>
+          <button type="button" class="btn btn--ghost" data-clear>Apagar tudo</button>
+        </div>
+      </form>
+
+      <aside class="summary-col">
+        <div class="summary" id="resumo" aria-live="polite">
+          <header>
+            <p class="s-eyebrow">Resumo para a consulta · {site.nome}</p>
+            <h2 data-s="titulo">Minha dor</h2>
+            <p class="s-date" data-s="data"></p>
+          </header>
+          <dl data-s="itens"><div class="s-empty">Comece a responder ao lado — o resumo aparece aqui.</div></dl>
+          <footer>Preenchido pelo paciente. Não é um documento médico.</footer>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  (function () {
+    var KEY = 'dorcronica:consulta:v1';
+    var form = document.getElementById('prep');
+    if (!form) return;
+    var itens = document.querySelector('[data-s="itens"]');
+    var titulo = document.querySelector('[data-s="titulo"]');
+    document.querySelector('[data-s="data"]').textContent = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function read() {
+      var o = {};
+      Array.prototype.forEach.call(form.elements, function (el) {
+        if (!el.name) return;
+        if (el.type === 'checkbox') { o[el.name] = o[el.name] || []; if (el.checked) o[el.name].push(el.value); }
+        else if (el.type === 'radio') { if (el.checked) o[el.name] = el.value; }
+        else o[el.name] = el.value;
+      });
+      return o;
+    }
+    function write(o) {
+      Array.prototype.forEach.call(form.elements, function (el) {
+        if (!el.name || !(el.name in o)) return;
+        if (el.type === 'checkbox') el.checked = (o[el.name] || []).indexOf(el.value) >= 0;
+        else if (el.type === 'radio') el.checked = o[el.name] === el.value;
+        else el.value = o[el.name];
+      });
+    }
+    function bar(v) { return '<span class="s-bar"><i style="width:' + (v * 10) + '%"></i></span><b>' + v + '/10</b>'; }
+    function row(k, v) { return v ? '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>' : ''; }
+    function list(a) { return a && a.length ? a.map(esc).join(' · ') : ''; }
+    function labels(vals) {
+      return (vals || []).map(function (v) { var el = form.querySelector('input[name="regioes"][value="' + v + '"]'); return el ? el.dataset.label : v; });
+    }
+
+    function render() {
+      var o = read();
+      Array.prototype.forEach.call(form.querySelectorAll('output[data-for]'), function (out) { out.textContent = o[out.dataset.for]; });
+      titulo.textContent = o.nome ? 'Dor de ' + o.nome + (o.idade ? ', ' + o.idade + ' anos' : '') : 'Minha dor';
+      var touched = form.dataset.touched === '1';
+      var h = '';
+      h += row('Onde dói', [list(labels(o.regioes)), esc(o.ondeTexto || '')].filter(Boolean).join('<br>'));
+      h += row('Há quanto tempo', [esc(o.tempo || ''), esc(o.inicio || '')].filter(Boolean).join(' — '));
+      if (touched) h += row('Intensidade', '<span class="s-trio">Média ' + bar(o.media) + '</span><span class="s-trio">Pior ' + bar(o.pior) + '</span><span class="s-trio">Melhor ' + bar(o.melhor) + '</span>');
+      h += row('Como é', list(o.tipo));
+      h += row('Padrão', list(o.padrao));
+      if (touched) h += row('Interferência', '<span class="s-trio">Sono ' + bar(o.sono) + '</span><span class="s-trio">Atividades ' + bar(o.atividades) + '</span><span class="s-trio">Humor ' + bar(o.humor) + '</span>');
+      h += row('Deixei de fazer', esc(o.deixou || ''));
+      h += row('Piora com', esc(o.piora || ''));
+      h += row('Melhora com', esc(o.melhora || ''));
+      h += row('Já tentei', list(o.tentados));
+      h += row('Remédios atuais', esc(o.remedios || '').replace(/\n/g, '<br>'));
+      h += row('Alergias', esc(o.alergias || ''));
+      h += row('Vou levar', list(o.exames));
+      h += row('Minhas perguntas', esc(o.perguntas || '').replace(/\n/g, '<br>'));
+      itens.innerHTML = h || '<div class="s-empty">Comece a responder ao lado — o resumo aparece aqui.</div>';
+      try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {}
+    }
+
+    try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved) { write(saved); form.dataset.touched = '1'; } } catch (e) {}
+    var qs = new URLSearchParams(location.search).get('regioes');
+    if (qs) qs.split(',').forEach(function (r) { var el = form.querySelector('input[name="regioes"][value="' + r + '"]'); if (el) el.checked = true; });
+
+    form.addEventListener('input', function () { form.dataset.touched = '1'; render(); });
+    form.addEventListener('change', render);
+    document.querySelector('[data-print]').addEventListener('click', function () { form.dataset.touched = '1'; render(); window.print(); });
+    document.querySelector('[data-clear]').addEventListener('click', function () {
+      if (!confirm('Apagar todas as respostas deste aparelho?')) return;
+      try { localStorage.removeItem(KEY); } catch (e) {}
+      form.reset(); form.dataset.touched = '0'; render();
+    });
+    render();
+  })();
+</script>
+
+<style>
+  .tool { display: grid; gap: var(--space-4); align-items: start; }
+  @media (min-width: 1040px) { .tool { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); column-gap: var(--space-5); } .summary-col { position: sticky; top: calc(var(--header-h) + 1.5rem); } }
+  .privacy { font-size: 0.9rem; color: var(--muted); margin-bottom: var(--space-3); }
+  fieldset { border: 0; border-top: 1px solid var(--line); padding: 1.5rem 0; margin: 0; display: grid; gap: 1rem; }
+  legend { padding: 0; font: 500 var(--step-1)/1.3 var(--font-serif); display: flex; gap: 0.6rem; align-items: baseline; flex-wrap: wrap; margin-bottom: 0.25rem; float: left; width: 100%; }
+  legend span { font: 600 0.8rem/1 var(--font-sans); color: var(--gold); min-width: 1.4rem; }
+  legend small { font: 400 0.85rem/1.3 var(--font-sans); color: var(--muted); }
+  label { display: grid; gap: 0.35rem; font-weight: 600; font-size: 0.92rem; }
+  input:not([type]), input[inputmode], textarea {
+    font: inherit; font-weight: 400; color: var(--ink); background: var(--surface);
+    min-height: 46px; padding: 0.6rem 0.8rem; border: 1px solid #c9bfae; border-radius: var(--radius);
+  }
+  textarea { min-height: auto; resize: vertical; }
+  .row { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .chip { display: inline-flex; font-weight: 500; }
+  .chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .chip span { padding: 0.5rem 0.85rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); cursor: pointer; font-size: 0.9rem; min-height: 40px; display: inline-flex; align-items: center; }
+  .chip:hover span { border-color: var(--ink); }
+  .chip input:checked + span { background: var(--navy); color: var(--on-navy); border-color: var(--navy); }
+  .chip input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .range { grid-template-columns: 1fr auto; align-items: center; }
+  .range input { grid-column: 1 / -1; accent-color: var(--navy); width: 100%; height: 28px; }
+  .range output { font: 500 1.3rem/1 var(--font-serif); color: var(--navy-2); min-width: 2ch; text-align: right; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; padding-top: var(--space-3); border-top: 1px solid var(--line); }
+
+  .summary { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.75rem; box-shadow: 0 1px 0 var(--line), 0 18px 40px -24px rgb(20 32 49 / .35); }
+  .summary header { border-bottom: 2px solid var(--ink); padding-bottom: 0.9rem; margin-bottom: 0.5rem; }
+  .s-eyebrow { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.4rem; }
+  .summary h2 { font-size: var(--step-2); margin: 0; }
+  .s-date { margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--muted); }
+  .summary dl { margin: 0; }
+  .summary dl :global(div) { display: grid; grid-template-columns: 8.5rem 1fr; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+  .summary :global(dt) { font-weight: 600; color: var(--ink-soft); }
+  .summary :global(dd) { margin: 0; }
+  .summary :global(.s-empty) { display: block !important; color: var(--muted); border: 0 !important; padding: 1.5rem 0 !important; }
+  .summary :global(.s-trio) { display: grid; grid-template-columns: 5.5rem 1fr 2.6rem; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem; }
+  .summary :global(.s-bar) { height: 6px; background: var(--paper-deep); border-radius: 3px; overflow: hidden; }
+  .summary :global(.s-bar i) { display: block; height: 100%; background: linear-gradient(90deg, #c9a66b, #8a2f1f); }
+  .summary :global(b) { font-weight: 600; font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+  .summary footer { margin-top: 1rem; font-size: 0.75rem; color: var(--muted); }
+
+  @media print {
+    :global(.intro), :global(.no-print) { display: none !important; }
+    .tool { display: block; }
+    .summary { border: 0; box-shadow: none; padding: 0; }
+    :global(.section) { padding: 0 !important; }
+  }
+</style>

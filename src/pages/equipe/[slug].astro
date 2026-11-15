@@ -1,0 +1,140 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import LiteYouTube from '../../components/LiteYouTube.astro';
+import Icon from '../../components/Icon.astro';
+import { site, whatsappPrincipal } from '../../config/site';
+import { credencial, nomeCompleto, linkWhatsapp, especialidadeTexto, dataLonga } from '../../lib/format';
+import { breadcrumbs, grafo, physician } from '../../lib/jsonld';
+
+export async function getStaticPaths() {
+  return (await getCollection('profissionais')).map((p) => ({ params: { slug: p.id }, props: { p } }));
+}
+const { p } = Astro.props;
+const { Content } = await render(p);
+const nome = nomeCompleto(p.data);
+const foto = await getImage({ src: p.data.foto, width: 800, format: 'jpg' });
+const midia = (await getCollection('midia', (m) => m.data.participantes.some((r) => r.id === p.id)))
+  .sort((a, b) => b.data.data.valueOf() - a.data.data.valueOf());
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'O médico', href: `/equipe/${p.id}/` }];
+const jsonld = grafo(
+  { '@type': 'ProfilePage', mainEntity: physician(p, Astro.site!, new URL(foto.src, Astro.site).href) },
+  breadcrumbs(trilha, Astro.site!),
+);
+const principios = [
+  ['Empatia e acolhimento', 'Estar próximo em cada etapa da jornada.'],
+  ['Clareza', 'Explicar de forma simples e transparente.'],
+  ['Tratamento sob medida', 'Porque cada pessoa vive a dor de um jeito único.'],
+  ['Compromisso social', 'Atuar com responsabilidade além do consultório.'],
+];
+---
+<BaseLayout titulo={p.data.seoTitulo ?? nome} descricao={p.data.seoDescricao ?? `${nome} — ${p.data.chamada}`} imagem={p.data.foto} jsonld={jsonld}>
+  <section class="profile">
+    <div class="container grid">
+      <div class="copy">
+        <Breadcrumbs itens={trilha} />
+        <p class="eyebrow">{especialidadeTexto(p.data)}</p>
+        <h1>{nome}</h1>
+        <p class="chamada">{p.data.chamada}</p>
+        <p class="cred">{credencial(p.data)}</p>
+        <div class="ctas">
+          <a class="btn" href={linkWhatsapp(whatsappPrincipal.numero, site.contato.mensagemWhatsapp)} rel="noopener"><Icon nome="whatsapp" /> Agendar consulta</a>
+          {p.data.doctoralia && <a class="link-arrow" href={p.data.doctoralia} rel="noopener">Avaliações no Doctoralia</a>}
+        </div>
+      </div>
+      <figure class="photo">
+        <Image src={p.data.foto} alt={p.data.fotoAlt} widths={[420, 700, 1000]} sizes="(min-width: 960px) 40vw, 92vw" loading="eager" fetchpriority="high" />
+      </figure>
+    </div>
+  </section>
+
+  {p.data.vinculos.length > 0 && (
+    <section class="roles">
+      <div class="container">
+        <p class="eyebrow">Atuação</p>
+        <ul role="list">
+          {p.data.vinculos.map((v) => <li><span class="cargo">{v.cargo}</span><span class="inst">{v.instituicao}</span></li>)}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <div class="container bio">
+      <div class="prose"><Content /></div>
+      {p.data.citacoes.length > 0 && (
+        <aside class="quotes">
+          {p.data.citacoes.map((c, i) => (
+            <figure class:list={[{ first: i === 0 }]}>
+              <blockquote><p>“{c.texto}”</p></blockquote>
+              <figcaption>{c.url ? <a href={c.url} rel="noopener">{c.fonte}</a> : c.fonte}</figcaption>
+            </figure>
+          ))}
+        </aside>
+      )}
+    </div>
+  </section>
+
+  {midia.length > 0 && (
+    <section class="section section--deep">
+      <div class="container media-grid">
+        <div>
+          <p class="eyebrow">Ouça</p>
+          <h2>{midia[0].data.titulo}</h2>
+          <p class="muted">{midia[0].data.veiculo} · {dataLonga(midia[0].data.data)}{midia[0].data.duracao && ` · ${midia[0].data.duracao}`}</p>
+          <p>{midia[0].data.resumo}</p>
+          <a class="link-arrow" href="/na-midia/">Todas as participações</a>
+        </div>
+        {midia[0].data.youtubeId && <LiteYouTube id={midia[0].data.youtubeId} titulo={midia[0].data.titulo} />}
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <div class="container principles">
+      <div>
+        <p class="eyebrow">O que nos guia</p>
+        <p class="statement">Um espaço de confiança para quem convive com dor crônica, onde o cuidado é construído com empatia e ciência.</p>
+      </div>
+      <dl class="values">
+        {principios.map(([t, d]) => <div><dt>{t}</dt><dd>{d}</dd></div>)}
+      </dl>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .profile { padding-block: clamp(2rem, 1.5rem + 3vw, 4rem) 0; }
+  .grid { display: grid; gap: var(--space-4); align-items: end; }
+  @media (min-width: 960px) { .grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); column-gap: var(--space-5); } }
+  .copy { padding-bottom: var(--space-4); }
+  .chamada { font: 400 var(--step-2)/1.3 var(--font-serif); color: var(--ink-soft); max-width: 30ch; }
+  .cred { font-size: 0.82rem; letter-spacing: 0.04em; color: var(--muted); }
+  .ctas { display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: center; margin-top: var(--space-3); }
+  .photo { margin: 0; background: var(--navy); border-radius: var(--radius) var(--radius) 0 0; overflow: hidden; }
+  .photo :global(img) { width: 100%; aspect-ratio: 4 / 4.6; object-fit: cover; object-position: 50% 10%; }
+  .roles { background: var(--navy); color: var(--on-navy); padding-block: var(--space-4); }
+  .roles .eyebrow { color: var(--gold-on-navy); }
+  .roles ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem 2rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .roles li { display: grid; gap: 0.25rem; padding-left: 1rem; border-left: 1px solid rgb(255 255 255 / 0.2); }
+  .cargo { font: 400 1.15rem/1.25 var(--font-serif); }
+  .inst { font-size: 0.86rem; color: var(--on-navy-muted); }
+  .bio { display: grid; gap: var(--space-4); }
+  @media (min-width: 1000px) { .bio { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); column-gap: var(--space-5); } .quotes { position: sticky; top: calc(var(--header-h) + 2rem); align-self: start; } }
+  .quotes figure { margin: 0 0 1.5rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+  .quotes blockquote { margin: 0; }
+  .quotes p { font: 400 var(--step-1)/1.35 var(--font-serif); margin: 0 0 0.4rem; }
+  .quotes .first p { font-size: var(--step-3); line-height: 1.1; }
+  .quotes figcaption { font-size: 0.82rem; color: var(--muted); }
+  .media-grid { display: grid; gap: var(--space-4); align-items: center; }
+  @media (min-width: 960px) { .media-grid { grid-template-columns: 1fr 1fr; } }
+  .media-grid h2 { font-size: var(--step-2); }
+  .principles { display: grid; gap: var(--space-4); }
+  @media (min-width: 960px) { .principles { grid-template-columns: 1fr 1fr; column-gap: var(--space-5); } }
+  .statement { font: 400 var(--step-2)/1.3 var(--font-serif); max-width: 28ch; }
+  .values { margin: 0; display: grid; }
+  .values div { padding-block: 1rem; border-top: 1px solid var(--line); }
+  .values dt { font: 500 var(--step-1)/1.3 var(--font-serif); }
+  .values dd { margin: 0.2rem 0 0; color: var(--ink-soft); }
+</style>

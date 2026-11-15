@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import ContactBlock from '../components/ContactBlock.astro';
+import Alerta from '../components/Alerta.astro';
+import { site } from '../config/site';
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Contato', href: '/contato/' }];
+---
+<BaseLayout titulo="Contato e agendamento" descricao={`Agende sua consulta pelo WhatsApp ou telefone. Atendimento no Eco Medical Center, Água Verde, ${site.cidade}.`}>
+  <div class="container crumbs"><Breadcrumbs itens={trilha} /></div>
+  <section class="section first"><ContactBlock nivel="h1" /></section>
+  <section class="section"><div class="container"><Alerta /></div></section>
+</BaseLayout>
+<style>
+  .crumbs { padding-top: clamp(2rem, 1.5rem + 3vw, 4rem); }
+  .first { padding-top: 0; }
+</style>

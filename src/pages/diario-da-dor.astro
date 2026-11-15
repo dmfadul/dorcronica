@@ -1,0 +1,201 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import { site } from '../config/site';
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Diário da dor', href: '/diario-da-dor/' }];
+---
+<BaseLayout titulo="Diário da dor" descricao="Registre sua dor dia a dia, veja o gráfico das últimas semanas e leve para a consulta. Fica só no seu aparelho.">
+  <PageIntro trilha={trilha} eyebrow="Ferramenta" titulo="Diário da dor" lead="Um registro por dia, menos de um minuto. Depois de uma ou duas semanas, o gráfico mostra ao médico o que uma consulta sozinha não mostra." />
+
+  <section class="section">
+    <div class="container diary">
+      <form id="diario" class="entry no-print" autocomplete="off">
+        <p class="privacy"><strong>Privado:</strong> os registros ficam só neste aparelho e neste navegador.</p>
+        <label>Dia<input type="date" name="dia" required /></label>
+        <label class="range">Dor do dia (0 a 10) <output data-out="dor">5</output><input type="range" name="dor" min="0" max="10" value="5" /></label>
+        <fieldset class="seg">
+          <legend>Como foi o sono?</legend>
+          <label><input type="radio" name="sono" value="bom" /><span>Bom</span></label>
+          <label><input type="radio" name="sono" value="regular" checked /><span>Regular</span></label>
+          <label><input type="radio" name="sono" value="ruim" /><span>Ruim</span></label>
+        </fieldset>
+        <label class="check"><input type="checkbox" name="extra" /> Precisei de remédio extra para a dor</label>
+        <label>O que aconteceu? (opcional)<input name="nota" maxlength="140" placeholder="Ex.: trabalhei sentado o dia todo; caminhei 30 min" /></label>
+        <button class="btn" type="submit">Salvar registro</button>
+        <p class="saved" data-saved hidden>Registro salvo.</p>
+      </form>
+
+      <div class="view">
+        <div class="chart-head">
+          <h2>Últimos 30 dias</h2>
+          <p class="stats" data-stats></p>
+        </div>
+        <figure class="chart" aria-label="Gráfico da intensidade da dor nos últimos 30 dias">
+          <svg viewBox="0 0 620 220" preserveAspectRatio="none" data-chart role="img"></svg>
+          <figcaption class="legend"><span class="l-line"></span> Dor (0–10) <span class="l-dot"></span> Sono ruim <span class="l-tri"></span> Remédio extra</figcaption>
+        </figure>
+        <p class="empty" data-empty>Nenhum registro ainda. Comece hoje — e repita amanhã.</p>
+        <table class="log" data-table hidden>
+          <thead><tr><th>Dia</th><th>Dor</th><th>Sono</th><th>Extra</th><th>Observação</th><th class="no-print"><span class="sr-only">Ações</span></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="buttons no-print">
+          <button type="button" class="btn btn--ghost" data-print>Imprimir para a consulta</button>
+          <button type="button" class="btn btn--ghost" data-csv>Exportar planilha (CSV)</button>
+          <button type="button" class="link-del" data-clear>Apagar todos os registros</button>
+        </div>
+        <p class="print-only">Diário preenchido pelo paciente · {site.nome}</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  (function () {
+    var KEY = 'dorcronica:diario:v1';
+    var form = document.getElementById('diario');
+    if (!form) return;
+    var svg = document.querySelector('[data-chart]');
+    var table = document.querySelector('[data-table]');
+    var tbody = table.querySelector('tbody');
+    var empty = document.querySelector('[data-empty]');
+    var stats = document.querySelector('[data-stats]');
+    var NS = 'http://www.w3.org/2000/svg';
+    var hoje = new Date(); hoje.setHours(12, 0, 0, 0);
+    function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+    function br(s) { var p = s.split('-'); return p[2] + '/' + p[1]; }
+    function load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } }
+    function save(db) { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
+    function el(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+    function esc(s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+    form.dia.value = iso(hoje);
+    form.dor.addEventListener('input', function () { form.querySelector('[data-out="dor"]').textContent = form.dor.value; });
+    form.dia.addEventListener('change', function () {
+      var r = load()[form.dia.value]; if (!r) return;
+      form.dor.value = r.dor; form.querySelector('[data-out="dor"]').textContent = r.dor;
+      form.querySelector('input[name="sono"][value="' + r.sono + '"]').checked = true;
+      form.extra.checked = !!r.extra; form.nota.value = r.nota || '';
+    });
+
+    function draw() {
+      var db = load();
+      var dias = Object.keys(db).sort();
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      var W = 620, H = 220, L = 28, R = 22, T = 10, B = 26;
+      for (var y = 0; y <= 10; y += 5) {
+        var yy = T + (H - T - B) * (1 - y / 10);
+        svg.appendChild(el('line', { x1: L, x2: W - R, y1: yy, y2: yy, class: 'grid' }));
+        var t = el('text', { x: L - 8, y: yy + 4, class: 'axis', 'text-anchor': 'end' }); t.textContent = y; svg.appendChild(t);
+      }
+      var pts = [], start = new Date(hoje); start.setDate(start.getDate() - 29);
+      for (var i = 0; i < 30; i++) {
+        var d = new Date(start); d.setDate(start.getDate() + i);
+        var k = iso(d), x = L + (W - L - R) * (i / 29);
+        if (i % 5 === 0 || i === 29) { var tx = el('text', { x: x, y: H - 6, class: 'axis', 'text-anchor': 'middle' }); tx.textContent = br(k); svg.appendChild(tx); }
+        var r = db[k];
+        if (r) {
+          var yv = T + (H - T - B) * (1 - r.dor / 10);
+          pts.push([x, yv]);
+          if (r.sono === 'ruim') svg.appendChild(el('circle', { cx: x, cy: H - B + 2, r: 3.5, class: 'sono' }));
+          if (r.extra) svg.appendChild(el('path', { d: 'M' + (x - 4) + ',' + (T + 2) + ' L' + (x + 4) + ',' + (T + 2) + ' L' + x + ',' + (T + 9) + ' Z', class: 'extra' }));
+        }
+      }
+      if (pts.length > 1) svg.appendChild(el('polyline', { points: pts.map(function (p) { return p.join(','); }).join(' '), class: 'line' }));
+      pts.forEach(function (p) { svg.appendChild(el('circle', { cx: p[0], cy: p[1], r: 4, class: 'pt' })); });
+
+      var ult = dias.filter(function (k) { return k >= iso(start); });
+      if (ult.length) {
+        var soma = 0, max = 0, ruim = 0, extra = 0;
+        ult.forEach(function (k) { var r = db[k]; soma += Number(r.dor); max = Math.max(max, r.dor); if (r.sono === 'ruim') ruim++; if (r.extra) extra++; });
+        stats.textContent = ult.length + ' registros · média ' + (soma / ult.length).toFixed(1) + ' · pior ' + max + ' · ' + ruim + ' noites ruins · ' + extra + ' dias com remédio extra';
+      } else stats.textContent = '';
+
+      empty.hidden = dias.length > 0;
+      table.hidden = dias.length === 0;
+      tbody.innerHTML = dias.slice().reverse().map(function (k) {
+        var r = db[k];
+        return '<tr><td>' + br(k) + '/' + k.slice(2, 4) + '</td><td><b>' + r.dor + '</b></td><td>' + r.sono + '</td><td>' + (r.extra ? 'sim' : '—') + '</td><td>' + esc(r.nota) + '</td><td class="no-print"><button type="button" data-del="' + k + '" aria-label="Apagar registro de ' + br(k) + '">×</button></td></tr>';
+      }).join('');
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var db = load();
+      db[form.dia.value] = { dor: Number(form.dor.value), sono: form.querySelector('input[name="sono"]:checked').value, extra: form.extra.checked, nota: form.nota.value.trim() };
+      save(db); draw();
+      var s = document.querySelector('[data-saved]'); s.hidden = false; setTimeout(function () { s.hidden = true; }, 2200);
+    });
+    tbody.addEventListener('click', function (e) {
+      var k = e.target.getAttribute && e.target.getAttribute('data-del'); if (!k) return;
+      var db = load(); delete db[k]; save(db); draw();
+    });
+    document.querySelector('[data-print]').addEventListener('click', function () { window.print(); });
+    document.querySelector('[data-clear]').addEventListener('click', function () {
+      if (confirm('Apagar todos os registros do diário neste aparelho?')) { try { localStorage.removeItem(KEY); } catch (e) {} draw(); }
+    });
+    document.querySelector('[data-csv]').addEventListener('click', function () {
+      var db = load();
+      var linhas = ['dia;dor;sono;remedio_extra;observacao'].concat(Object.keys(db).sort().map(function (k) { var r = db[k]; return [k, r.dor, r.sono, r.extra ? 'sim' : 'nao', '"' + String(r.nota || '').replace(/"/g, '""') + '"'].join(';'); }));
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob(['\ufeff' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' }));
+      a.download = 'diario-da-dor.csv'; document.body.appendChild(a); a.click(); a.remove();
+    });
+    draw();
+  })();
+</script>
+
+<style>
+  .diary { display: grid; gap: var(--space-4); align-items: start; }
+  @media (min-width: 1000px) { .diary { grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr); column-gap: var(--space-5); } .entry { position: sticky; top: calc(var(--header-h) + 1.5rem); } }
+  .entry { display: grid; gap: 1.1rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.5rem; }
+  .privacy { font-size: 0.88rem; color: var(--muted); margin: 0; }
+  label { display: grid; gap: 0.35rem; font-weight: 600; font-size: 0.92rem; }
+  input[type='date'], input[name='nota'] { font: inherit; font-weight: 400; min-height: 46px; padding: 0.55rem 0.8rem; border: 1px solid #c9bfae; border-radius: var(--radius); background: #fff; color: var(--ink); }
+  .range { grid-template-columns: 1fr auto; align-items: center; }
+  .range input { grid-column: 1 / -1; accent-color: var(--navy); width: 100%; height: 28px; }
+  .range output { font: 500 1.5rem/1 var(--font-serif); color: var(--navy-2); }
+  .seg { border: 0; padding: 0; margin: 0; display: flex; gap: 0; }
+  .seg legend { font-weight: 600; font-size: 0.92rem; margin-bottom: 0.35rem; padding: 0; }
+  .seg label { flex: 1; display: block; }
+  .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .seg span { display: block; text-align: center; padding: 0.6rem; border: 1px solid var(--line); background: #fff; cursor: pointer; font-weight: 500; }
+  .seg label:first-of-type span { border-radius: var(--radius) 0 0 var(--radius); }
+  .seg label:last-of-type span { border-radius: 0 var(--radius) var(--radius) 0; }
+  .seg input:checked + span { background: var(--navy); color: var(--on-navy); border-color: var(--navy); }
+  .seg input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .check { display: flex; gap: 0.6rem; align-items: center; font-weight: 500; }
+  .check input { width: 20px; height: 20px; accent-color: var(--navy); }
+  .saved { margin: 0; color: #2f6b3a; font-weight: 600; }
+
+  .chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem 1rem; }
+  .chart-head h2 { font-size: var(--step-2); margin: 0; }
+  .stats { margin: 0; font-size: 0.88rem; color: var(--muted); }
+  .chart { margin: 1rem 0 0; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1rem 0.75rem; }
+  .chart svg { width: 100%; height: 240px; display: block; }
+  .chart :global(.grid) { stroke: var(--paper-deep); stroke-width: 1; }
+  .chart :global(.axis) { font: 11px var(--font-sans); fill: var(--muted); }
+  .chart :global(.line) { fill: none; stroke: var(--navy-2); stroke-width: 2.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .chart :global(.pt) { fill: #fff; stroke: var(--navy-2); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .chart :global(.sono) { fill: #8a2f1f; }
+  .chart :global(.extra) { fill: var(--gold); }
+  .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+  .l-line { width: 18px; height: 3px; background: var(--navy-2); display: inline-block; }
+  .l-dot { width: 8px; height: 8px; border-radius: 50%; background: #8a2f1f; display: inline-block; margin-left: 0.6rem; }
+  .l-tri { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 8px solid var(--gold); display: inline-block; margin-left: 0.6rem; }
+  .empty { color: var(--muted); margin-top: var(--space-3); }
+  .log { width: 100%; border-collapse: collapse; margin-top: var(--space-3); font-size: 0.92rem; }
+  .log th { text-align: left; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0.5rem; border-bottom: 2px solid var(--ink); }
+  .log :global(td) { padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .log :global(button) { background: none; border: 0; font-size: 1.2rem; color: var(--muted); cursor: pointer; width: 32px; height: 32px; }
+  .log :global(button:hover) { color: var(--danger-ink); }
+  .buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: var(--space-3); }
+  .link-del { background: none; border: 0; color: var(--danger-ink); text-decoration: underline; cursor: pointer; font: inherit; font-size: 0.9rem; }
+  .print-only { display: none; }
+  @media print {
+    :global(.intro), :global(.no-print) { display: none !important; }
+    .diary { display: block; }
+    .print-only { display: block; font-size: 0.8rem; color: #555; }
+    :global(.section) { padding: 0 !important; }
+  }
+</style>

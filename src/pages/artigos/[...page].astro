@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import ArticleList from '../../components/ArticleList.astro';
+import { site } from '../../config/site';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const artigos = (await getCollection('artigos', (a) => !a.data.rascunho))
+    .sort((a, b) => b.data.publicadoEm.valueOf() - a.data.publicadoEm.valueOf());
+  return paginate(artigos, { pageSize: site.recursos.artigosPorPagina });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Artigos', href: '/artigos/' }];
+const sufixo = page.currentPage > 1 ? ` — página ${page.currentPage}` : '';
+---
+<BaseLayout titulo={`Artigos${sufixo}`} descricao="Informação confiável sobre dor crônica, diagnóstico e tratamentos baseados em evidências.">
+  <PageIntro trilha={trilha} eyebrow="Artigos" titulo="Entenda melhor a dor e os caminhos para tratá-la" />
+  <section class="section">
+    <div class="container">
+      <ArticleList artigos={page.data} titulo="h2" />
+      {page.lastPage > 1 && (
+        <nav class="pager" aria-label="Paginação">
+          {page.url.prev ? <a href={page.url.prev} class="link-arrow back">Mais recentes</a> : <span />}
+          <span class="muted">Página {page.currentPage} de {page.lastPage}</span>
+          {page.url.next ? <a href={page.url.next} class="link-arrow">Mais antigos</a> : <span />}
+        </nav>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .pager { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-4); }
+</style>

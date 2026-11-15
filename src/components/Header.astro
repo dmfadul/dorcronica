@@ -1,0 +1,105 @@
+---
+import { getEntry } from 'astro:content';
+import { site, whatsappPrincipal } from '../config/site';
+import { linkWhatsapp, credencial } from '../lib/format';
+import Icon from './Icon.astro';
+
+const rt = await getEntry('profissionais', site.responsavelTecnico);
+const atual = Astro.url.pathname;
+const ativo = (href: string) => atual === href || (href !== '/' && atual.startsWith(href));
+const wa = linkWhatsapp(whatsappPrincipal.numero, site.contato.mensagemWhatsapp);
+---
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="/" aria-label={`${site.nome} — página inicial`}>
+      <span class="brand-name">{site.nome}</span>
+      <span class="brand-sub">{site.servico} · {site.cidade}</span>
+    </a>
+
+    <nav class="nav-desktop" aria-label="Principal">
+      {site.navegacao.map((i) => (
+        <a href={i.href} aria-current={ativo(i.href) ? 'page' : undefined}>{i.rotulo}</a>
+      ))}
+    </nav>
+
+    <a class="btn header-cta" href={wa} rel="noopener" data-evento="whatsapp_header">
+      <Icon nome="whatsapp" /><span>Agendar</span>
+    </a>
+
+    <button class="menu-btn" type="button" popovertarget="menu-mobile" aria-label="Abrir menu">
+      <Icon nome="menu" />
+    </button>
+  </div>
+
+  <div id="menu-mobile" popover class="menu-mobile">
+    <div class="menu-mobile-top">
+      <span class="brand-name">{site.nome}</span>
+      <button type="button" popovertarget="menu-mobile" popovertargetaction="hide" class="menu-btn" aria-label="Fechar menu">
+        <Icon nome="fechar" />
+      </button>
+    </div>
+    <nav aria-label="Principal (celular)">
+      <a href="/">Início</a>
+      {site.navegacao.map((i) => (
+        <a href={i.href} aria-current={ativo(i.href) ? 'page' : undefined}>{i.rotulo}</a>
+      ))}
+    </nav>
+    <nav class="extra" aria-label="Mais">
+      {site.navegacaoExtra.map((i) => <a href={i.href}>{i.rotulo}</a>)}
+    </nav>
+    <a class="btn" href={wa} rel="noopener"><Icon nome="whatsapp" /> Agendar pelo WhatsApp</a>
+    {rt && <p class="menu-cred">{credencial(rt.data)}</p>}
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky; top: 0; z-index: 30;
+    background: color-mix(in srgb, var(--paper) 94%, transparent);
+    backdrop-filter: saturate(140%) blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar { display: flex; align-items: center; gap: var(--space-3); min-height: var(--header-h); }
+  .brand { display: grid; text-decoration: none; line-height: 1.15; margin-right: auto; }
+  .brand-name { font: 500 1.3rem/1.1 var(--font-serif); letter-spacing: -0.01em; }
+  .brand-sub { font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+  .nav-desktop { display: none; gap: 0.15rem; }
+  .nav-desktop a {
+    text-decoration: none; padding: 0.5rem 0.7rem; border-radius: var(--radius);
+    font-size: 0.95rem; color: var(--ink-soft);
+  }
+  .nav-desktop a:hover { color: var(--ink); background: var(--paper-deep); }
+  .nav-desktop a[aria-current='page'] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--gold); border-radius: 0; }
+
+  .header-cta { min-height: 42px; padding: 0.55rem 1rem; font-size: 0.95rem; }
+  .menu-btn {
+    display: inline-grid; place-items: center; width: 44px; height: 44px;
+    background: none; border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); cursor: pointer;
+  }
+  .menu-btn :global(svg) { width: 22px; height: 22px; }
+
+  @media (max-width: 479px) { .header-cta span { display: none; } .header-cta { padding-inline: 0.8rem; } .brand-sub { font-size: 0.66rem; letter-spacing: 0.04em; } }
+  @media (min-width: 1060px) {
+    .nav-desktop { display: flex; }
+    .menu-btn { display: none; }
+  }
+
+  .menu-mobile {
+    inset: 0 0 0 auto; margin: 0; height: 100dvh; width: min(88vw, 380px); max-height: none;
+    border: 0; border-left: 1px solid var(--line); padding: 1rem 1.25rem 2rem;
+    background: var(--paper); color: var(--ink); overflow-y: auto;
+    display: none; flex-direction: column; gap: var(--space-3);
+  }
+  .menu-mobile:popover-open { display: flex; }
+  .menu-mobile::backdrop { background: rgb(20 32 49 / 0.45); }
+  .menu-mobile-top { display: flex; justify-content: space-between; align-items: center; }
+  .menu-mobile nav { display: grid; }
+  .menu-mobile nav a {
+    padding: 0.8rem 0; border-bottom: 1px solid var(--line);
+    font: 450 1.3rem/1.2 var(--font-serif); text-decoration: none;
+  }
+  .menu-mobile nav.extra a { font: 500 0.98rem/1.2 var(--font-sans); padding: 0.65rem 0; color: var(--ink-soft); }
+  .menu-mobile nav a[aria-current='page'] { color: var(--gold); }
+  .menu-cred { font-size: 0.78rem; color: var(--muted); margin-top: auto; }
+</style>

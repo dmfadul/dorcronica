@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import LiteYouTube from '../components/LiteYouTube.astro';
+import { dataLonga } from '../lib/format';
+const midia = (await getCollection('midia')).sort((a, b) => b.data.data.valueOf() - a.data.data.valueOf());
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Podcast e mídia', href: '/na-midia/' }];
+---
+<BaseLayout titulo="Podcast e mídia" descricao="Entrevistas e participações do Dr. Alberto Fadul sobre dor crônica e Medicina da Dor.">
+  <PageIntro trilha={trilha} eyebrow="Podcast e mídia" titulo="Para ouvir e assistir" lead="Participações em podcasts e entrevistas sobre dor crônica e Medicina da Dor." />
+  <section class="section">
+    <div class="container">
+      {midia.map((m) => (
+        <article class="item">
+          {m.data.youtubeId ? <LiteYouTube id={m.data.youtubeId} titulo={m.data.titulo} /> : <div />}
+          <div>
+            <p class="meta">{m.data.formato} · {m.data.veiculo} · {dataLonga(m.data.data)}{m.data.duracao && ` · ${m.data.duracao}`}</p>
+            <h2><a href={m.data.url} rel="noopener">{m.data.titulo}</a></h2>
+            <p>{m.data.resumo}</p>
+            {m.data.topicos.length > 0 && (<><p class="eyebrow">Tópicos</p><ul>{m.data.topicos.map((t) => <li>{t}</li>)}</ul></>)}
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .item { display: grid; gap: var(--space-3) var(--space-5); padding-block: var(--space-3); }
+  @media (min-width: 960px) { .item { grid-template-columns: 1.1fr 0.9fr; align-items: start; } }
+  .meta { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  h2 { font-size: var(--step-2); }
+  h2 a { text-decoration: none; }
+  h2 a:hover { text-decoration: underline; }
+  ul { padding-left: 1.1em; display: grid; gap: 0.3rem; }
+  li::marker { color: var(--gold); }
+</style>

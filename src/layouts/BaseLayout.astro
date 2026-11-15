@@ -1,0 +1,85 @@
+---
+import '@fontsource-variable/newsreader';
+import '@fontsource-variable/public-sans';
+import '../styles/global.css';
+import { getImage } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import { site, whatsappPrincipal } from '../config/site';
+import { linkWhatsapp } from '../lib/format';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Icon from '../components/Icon.astro';
+
+interface Props {
+  titulo: string;
+  descricao?: string;
+  /** Imagem para compartilhamento (Open Graph). Padrão: retrato do responsável técnico. */
+  imagem?: ImageMetadata;
+  tipo?: 'website' | 'article';
+  jsonld?: object;
+  noindex?: boolean;
+  publicadoEm?: Date;
+}
+const { titulo, descricao = site.descricao, imagem, tipo = 'website', jsonld, noindex = false, publicadoEm } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const tituloFinal = titulo.includes(site.nome) ? titulo : `${titulo} | ${site.nome}`;
+const rt = await getEntry('profissionais', site.responsavelTecnico);
+const fonteOg = imagem ?? rt?.data.foto;
+const og = fonteOg ? await getImage({ src: fonteOg, width: 1200, height: 630, fit: 'cover', position: 'top', format: 'jpg' }) : undefined;
+const wa = linkWhatsapp(whatsappPrincipal.numero, site.contato.mensagemWhatsapp);
+---
+<!doctype html>
+<html lang={site.idioma}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloFinal}</title>
+    <meta name="description" content={descricao} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="theme-color" content="#14253c" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={`Artigos — ${site.nome}`} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content={site.nome} />
+    <meta property="og:type" content={tipo} />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descricao} />
+    <meta property="og:url" content={canonical} />
+    {og && <meta property="og:image" content={new URL(og.src, Astro.site)} />}
+    {og && <meta property="og:image:width" content="1200" />}
+    {og && <meta property="og:image:height" content="630" />}
+    {publicadoEm && <meta property="article:published_time" content={publicadoEm.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <Header />
+    <main id="conteudo">
+      <slot />
+    </main>
+    <Footer />
+
+    <a class="wa-bar" href={wa} rel="noopener" data-evento="whatsapp_barra">
+      <Icon nome="whatsapp" /> Agendar pelo WhatsApp
+    </a>
+  </body>
+</html>
+
+<style>
+  .wa-bar {
+    position: fixed; z-index: 25; left: 0.75rem; right: 0.75rem; bottom: max(0.75rem, env(safe-area-inset-bottom));
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 52px; border-radius: var(--radius);
+    background: var(--navy); color: var(--on-navy); text-decoration: none; font-weight: 600;
+    box-shadow: 0 8px 24px rgb(20 32 49 / 0.28);
+  }
+  .wa-bar :global(svg) { width: 20px; height: 20px; }
+  @media (min-width: 720px) { .wa-bar { display: none; } }
+  @media (max-width: 719px) { :global(body) { padding-bottom: 80px; } }
+</style>

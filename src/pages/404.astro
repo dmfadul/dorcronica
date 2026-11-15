@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout titulo="Página não encontrada" noindex>
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">Erro 404</p>
+      <h1>Esta página não existe ou mudou de endereço.</h1>
+      <p class="lead">Talvez você esteja procurando:</p>
+      <ul class="links">
+        <li><a class="link-arrow" href="/condicoes/">Condições que tratamos</a></li>
+        <li><a class="link-arrow" href="/artigos/">Artigos</a></li>
+        <li><a class="link-arrow" href="/contato/">Contato e agendamento</a></li>
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  h1 { max-width: 20ch; }
+  .links { list-style: none; padding: 0; display: grid; gap: 1rem; justify-items: start; }
+</style>

@@ -1,0 +1,41 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import { breadcrumbs, grafo } from '../../lib/jsonld';
+
+const tratamentos = (await getCollection('tratamentos')).sort((a, b) => a.data.ordem - b.data.ordem);
+const etapas = ['Avaliação', 'Tratamento clínico', 'Procedimento', 'Acompanhamento'] as const;
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Tratamentos', href: '/tratamentos/' }];
+---
+<BaseLayout titulo="Tratamentos" descricao="Consulta, medicação dirigida, bloqueios, infiltrações, radiofrequência, toxina botulínica, neuromodulação e programa multidisciplinar para dor crônica." jsonld={grafo(breadcrumbs(trilha, Astro.site!))}>
+  <PageIntro trilha={trilha} eyebrow="Como cuidamos" titulo="Tratamentos" lead="O cuidado começa na consulta e pode incluir medicação, procedimentos minimamente invasivos e acompanhamento multidisciplinar, conforme a indicação de cada caso." />
+  <section class="section">
+    <div class="container">
+      {etapas.map((e, i) => (
+        <div class="group">
+          <p class="step">{String(i + 1).padStart(2, '0')} · {e}</p>
+          <ol class="list" role="list">
+            {tratamentos.filter((t) => t.data.etapa === e).map((t) => (
+              <li>
+                <h2><a href={`/tratamentos/${t.id}/`}>{t.data.titulo}</a></h2>
+                <p>{t.data.resumo}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .group { display: grid; gap: 0 2rem; padding-block: 1.5rem; border-top: 2px solid var(--ink); }
+  .group + .group { border-top-color: var(--line); }
+  @media (min-width: 860px) { .group { grid-template-columns: 14rem 1fr; } }
+  .step { font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); font-weight: 600; padding-top: 0.6rem; }
+  .list { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.5rem; }
+  h2 { font-size: var(--step-2); margin-bottom: 0.25em; }
+  h2 a { text-decoration: none; }
+  h2 a:hover { text-decoration: underline; }
+  p { color: var(--ink-soft); margin: 0; max-width: 62ch; }
+</style>

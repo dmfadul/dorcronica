@@ -1,0 +1,76 @@
+# Perguntas frequentes. 'destaque: true' aparece na página inicial.
+- id: dor-cronica-o-que-e
+  tema: Dor crônica
+  ordem: 1
+  destaque: true
+  pergunta: Quando uma dor passa a ser considerada crônica?
+  resposta: Pela definição internacional, quando dura mais de três meses. Mas esse critério existe principalmente para a pesquisa. Na prática clínica, algumas dores devem ser tratadas logo no início — como a do herpes-zóster — justamente para reduzir o risco de se tornarem crônicas. Se a dor está atrapalhando o sono, o trabalho ou a rotina, não é preciso esperar três meses para buscar avaliação.
+- id: dor-cronica-cura
+  tema: Dor crônica
+  ordem: 2
+  destaque: true
+  pergunta: Dor crônica tem cura?
+  resposta: Depende da causa e de há quanto tempo a dor existe. Algumas dores podem ser resolvidas, sobretudo quando tratadas cedo. Em outras, o objetivo realista é controlar a dor — reduzir a intensidade e a frequência das crises — para que a pessoa recupere o sono, o trabalho e as atividades que deixou de fazer. Esse objetivo é combinado com o paciente desde a primeira consulta.
+- id: exame-normal
+  tema: Dor crônica
+  ordem: 3
+  destaque: true
+  pergunta: Meus exames estão normais, mas eu sinto dor. Isso é possível?
+  resposta: Sim. Nem tudo o que causa dor aparece em exame de imagem, e o contrário também acontece — muitas alterações vistas na ressonância não causam dor. Em várias condições, como a fibromialgia, a dor vem de uma alteração no processamento do sistema nervoso. A dor é real, mesmo quando o exame vem normal.
+- id: medico-da-dor
+  tema: Consulta
+  ordem: 4
+  destaque: true
+  pergunta: O que faz um médico da dor?
+  resposta: É o médico com formação específica para investigar e tratar a dor como problema de saúde em si. Ele combina medicações, procedimentos minimamente invasivos e reabilitação, e trabalha junto com o médico que já acompanha você — ortopedista, neurologista, oncologista, ginecologista, urologista — em vez de substituí-lo.
+- id: encaminhamento
+  tema: Consulta
+  ordem: 5
+  pergunta: Preciso de encaminhamento?
+  resposta: Não. Você pode agendar diretamente. Se já faz acompanhamento com outro médico, traga os relatórios — eles ajudam muito.
+- id: o-que-levar
+  tema: Consulta
+  ordem: 6
+  pergunta: O que levar na primeira consulta?
+  resposta: Exames de imagem e laudos (inclusive os antigos), a lista de remédios que você usa e já usou para a dor, relatórios de outros médicos e, se tiver, um registro de como a dor variou nas últimas semanas. A ferramenta “Preparar minha consulta” ajuda a organizar tudo isso em uma página.
+- id: teleconsulta
+  tema: Consulta
+  ordem: 7
+  pergunta: Existe teleconsulta?
+  resposta: Há opção de teleconsulta para alguns casos, como retornos e pacientes de outras cidades. A primeira avaliação costuma ser presencial, porque o exame físico é parte importante do diagnóstico. Confirme a modalidade ao agendar.
+- id: convenio
+  tema: Consulta
+  ordem: 8
+  pergunta: O atendimento é por convênio?
+  resposta: Pergunte ao agendar. As condições de atendimento particular e a cobertura de procedimentos por planos de saúde variam caso a caso, e a equipe informa antes da consulta.
+- id: procedimento-doi
+  tema: Procedimentos
+  ordem: 9
+  destaque: true
+  pergunta: Os procedimentos doem? Preciso ficar internado?
+  resposta: São procedimentos minimamente invasivos, feitos com agulha e sem cortes, em geral com anestesia local e, quando indicado, sedação. Na maioria dos casos o paciente fica um período em observação e volta para casa no mesmo dia.
+- id: procedimento-quantas-vezes
+  tema: Procedimentos
+  ordem: 10
+  pergunta: Quantas vezes vou precisar repetir um procedimento?
+  resposta: Varia muito. Há pacientes que respondem bem a uma ou duas aplicações e outros que precisam repetir após alguns meses. A resposta ao primeiro procedimento orienta os próximos passos.
+- id: repouso
+  tema: Tratamento
+  ordem: 11
+  pergunta: Devo fazer repouso ou me movimentar?
+  resposta: Na maioria das dores crônicas, o repouso prolongado piora o quadro. O movimento orientado e progressivo faz parte do tratamento. O que muda de pessoa para pessoa é a dose — por isso a atividade é planejada junto com fisioterapia.
+- id: remedio-depressao
+  tema: Tratamento
+  ordem: 12
+  pergunta: Por que o médico da dor receita remédio para depressão ou convulsão?
+  resposta: Algumas medicações criadas para depressão e para epilepsia agem nas vias que transmitem e modulam a dor. Elas são usadas em doses e com objetivos próprios para dor, mesmo em quem não tem depressão nem convulsões.
+- id: analgesico-sempre
+  tema: Tratamento
+  ordem: 13
+  pergunta: Tomo analgésico quase todo dia. Isso é um problema?
+  resposta: Pode ser. O uso muito frequente de analgésicos, especialmente para dor de cabeça, pode manter a própria dor. Não suspenda nada por conta própria — leve a lista completa para a consulta para planejar a troca com segurança.
+- id: urgencia
+  tema: Dor crônica
+  ordem: 14
+  pergunta: Quando a dor é caso de pronto atendimento?
+  resposta: Dor intensa e súbita; dor com febre, perda de peso sem explicação ou histórico de câncer; perda de força, alteração da fala ou da visão; perda do controle da urina ou das fezes; dor no peito ou falta de ar. Nesses casos procure um pronto atendimento ou ligue 192.

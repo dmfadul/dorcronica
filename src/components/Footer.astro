@@ -1,0 +1,84 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import { site } from '../config/site';
+import { formatarTelefone, credencial, nomeCompleto, especialidadeTexto } from '../lib/format';
+
+const rt = await getEntry('profissionais', site.responsavelTecnico);
+const unidades = (await getCollection('unidades')).sort((a, b) => Number(b.data.principal) - Number(a.data.principal));
+const condicoes = (await getCollection('condicoes')).sort((a, b) => a.data.ordem - b.data.ordem);
+const ano = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container grid">
+    <div class="col-id">
+      <p class="f-name">{site.nome}</p>
+      {rt && (
+        <p class="f-cred">
+          {especialidadeTexto(rt.data)}<br />
+          {credencial(rt.data)}<br />
+          Responsável técnico: {nomeCompleto(rt.data)}
+        </p>
+      )}
+      {unidades.map((u) => (
+        <p class="f-addr">
+          <strong>{u.data.servico ?? u.data.nome}</strong>{u.data.servico && <> — {u.data.nome}</>}<br />
+          {u.data.endereco ? <>{u.data.endereco.logradouro} — {u.data.endereco.bairro}, {u.data.cidade}/{u.data.uf}</> : <>{u.data.cidade}/{u.data.uf}</>}
+        </p>
+      ))}
+    </div>
+
+    <nav aria-label="Condições tratadas">
+      <p class="f-title">O que tratamos</p>
+      <ul class="two">{condicoes.map((c) => <li><a href={`/condicoes/${c.id}/`}>{c.data.curto ?? c.data.titulo}</a></li>)}</ul>
+    </nav>
+
+    <nav aria-label="Para pacientes">
+      <p class="f-title">Para pacientes</p>
+      <ul>
+        {site.navegacaoExtra.map((i) => <li><a href={i.href}>{i.rotulo}</a></li>)}
+        <li><a href="/privacidade/">Privacidade</a></li>
+      </ul>
+    </nav>
+
+    <div>
+      <p class="f-title">Contato</p>
+      <ul>
+        {site.contato.telefones.map((t) => (
+          <li><a href={`tel:+${t.numero}`}>{formatarTelefone(t.numero)}</a> <span class="lbl">{t.rotulo}</span></li>
+        ))}
+        <li><a href={`mailto:${site.contato.email}`}>{site.contato.email}</a></li>
+        <li><a href={site.redes.instagramServico} rel="noopener">Instagram da Eco Medicina da Dor</a></li>
+        <li><a href={site.redes.doctoralia} rel="noopener">Perfil e avaliações no Doctoralia</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container legal">
+    <p>
+      Conteúdo de caráter informativo e educativo, que não substitui a consulta médica.
+      Em caso de dor intensa e súbita, falta de ar, perda de força ou alteração da fala, procure um pronto atendimento ou ligue 192.
+    </p>
+    <p>© {ano} {site.nome}. Todos os direitos reservados.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer { background: var(--navy); color: var(--on-navy); padding-block: var(--space-5) var(--space-3); }
+  .grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  @media (min-width: 1060px) { .grid { grid-template-columns: 1.4fr 1.4fr 1fr 1.3fr; } }
+  .f-name { font: 450 1.6rem/1.1 var(--font-serif); margin-bottom: 0.75rem; }
+  .f-cred, .f-addr { color: var(--on-navy-muted); font-size: 0.88rem; }
+  .f-addr strong { color: var(--on-navy); font-weight: 600; }
+  .f-title { font-size: 0.76rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-on-navy); margin-bottom: 0.9rem; }
+  ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+  ul.two { grid-template-columns: 1fr 1fr; column-gap: 1rem; }
+  a { color: var(--on-navy); text-decoration: none; font-size: 0.93rem; }
+  a:hover { text-decoration: underline; }
+  .lbl { display: block; font-size: 0.75rem; color: var(--on-navy-muted); }
+  .legal {
+    margin-top: var(--space-4); padding-top: var(--space-3);
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+    display: grid; gap: 0.5rem; font-size: 0.82rem; color: var(--on-navy-muted);
+  }
+  .legal p { margin: 0; max-width: 90ch; }
+</style>

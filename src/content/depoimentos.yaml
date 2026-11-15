@@ -1,0 +1,7 @@
+# Publicar apenas com autorização por escrito do paciente (arquivada).
+# Resolução CFM 2.336/2023: sem sensacionalismo nem promessa de resultado.
+- id: pm-curitiba
+  texto: "Depois de anos com dor, finalmente voltei a dormir. Atendimento impecável."
+  autor: P.M.
+  cidade: Curitiba
+  autorizado: true

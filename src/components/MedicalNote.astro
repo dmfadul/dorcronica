@@ -1,0 +1,13 @@
+---
+interface Props { revisor?: string; data?: string; }
+const { revisor, data } = Astro.props;
+---
+<aside class="note" aria-label="Aviso médico">
+  <p><strong>Informação com responsabilidade.</strong> Este conteúdo é educativo e não substitui uma avaliação médica individualizada.</p>
+  {revisor && data && <p class="rev">Revisado por {revisor} em {data}.</p>}
+</aside>
+<style>
+  .note { margin-top: var(--space-4); padding: 1.25rem 1.4rem; background: var(--paper-deep); border-radius: var(--radius); font-size: 0.93rem; max-width: var(--reading); }
+  .note p { margin: 0; }
+  .rev { margin-top: 0.4rem !important; color: var(--muted); }
+</style>

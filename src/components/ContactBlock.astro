@@ -1,0 +1,74 @@
+---
+import { getCollection } from 'astro:content';
+import { site, whatsappPrincipal } from '../config/site';
+import { formatarTelefone, linkWhatsapp } from '../lib/format';
+import WhatsAppForm from './WhatsAppForm.astro';
+import Icon from './Icon.astro';
+
+interface Props { titulo?: string; nivel?: 'h1' | 'h2'; }
+const { titulo = 'Vamos conversar sobre a sua dor', nivel: H = 'h2' } = Astro.props;
+const unidades = (await getCollection('unidades')).sort((a, b) => Number(b.data.principal) - Number(a.data.principal));
+const outros = site.contato.telefones.filter((t) => t !== whatsappPrincipal);
+const mapa = (u: (typeof unidades)[number]) =>
+  u.data.geo ? `https://www.google.com/maps/search/?api=1&query=${u.data.geo.lat},${u.data.geo.lng}` : undefined;
+const waze = (u: (typeof unidades)[number]) =>
+  u.data.geo ? `https://waze.com/ul?ll=${u.data.geo.lat},${u.data.geo.lng}&navigate=yes` : undefined;
+---
+<div class="contact container">
+  <div class="info">
+    <p class="eyebrow">Contato e agendamento</p>
+    <H>{titulo}</H>
+    <p class="lead">Agendamento pelo WhatsApp ou por telefone. Atendimento presencial em {site.cidade}, com opção de teleconsulta para alguns casos.</p>
+
+    <dl>
+      <div>
+        <dt><Icon nome="whatsapp" /> WhatsApp</dt>
+        <dd><a href={linkWhatsapp(whatsappPrincipal.numero, site.contato.mensagemWhatsapp)} rel="noopener">{formatarTelefone(whatsappPrincipal.numero)}</a></dd>
+      </div>
+      <div>
+        <dt><Icon nome="telefone" /> Telefones</dt>
+        <dd>{outros.map((t) => <span><a href={`tel:+${t.numero}`}>{formatarTelefone(t.numero)}</a> <small>{t.rotulo}</small></span>)}</dd>
+      </div>
+      <div>
+        <dt><Icon nome="email" /> E-mail</dt>
+        <dd><a href={`mailto:${site.contato.email}`}>{site.contato.email}</a></dd>
+      </div>
+      {unidades.map((u) => (
+        <div>
+          <dt><Icon nome="local" /> Endereço</dt>
+          <dd>
+            <strong>{u.data.servico ?? u.data.nome}</strong>
+            {u.data.servico && <span>{u.data.nome}</span>}
+            {u.data.endereco && <span>{u.data.endereco.logradouro} — {u.data.endereco.bairro}, {u.data.cidade}/{u.data.uf}</span>}
+            {u.data.horarios.map((h) => <span class="muted">{h.dias}: {h.horas}</span>)}
+            {mapa(u) && <span class="maps"><a href={mapa(u)} rel="noopener">Google Maps</a> · <a href={waze(u)} rel="noopener">Waze</a></span>}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+
+  <div class="panel">
+    <h3>Pré-agendamento</h3>
+    <WhatsAppForm />
+  </div>
+</div>
+
+<style>
+  .contact { display: grid; gap: var(--space-4); }
+  .contact > * { min-width: 0; }
+  dd { overflow-wrap: anywhere; }
+  @media (min-width: 960px) { .contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+  dl { margin: var(--space-3) 0 0; display: grid; }
+  dl > div { display: grid; gap: 0.25rem; padding-block: 1rem; border-top: 1px solid var(--line); }
+  @media (min-width: 560px) { dl > div { grid-template-columns: 9rem 1fr; } }
+  dt { display: flex; gap: 0.5rem; align-items: center; font-weight: 600; font-size: 0.93rem; }
+  dt :global(svg) { width: 18px; height: 18px; color: var(--gold); }
+  dd { margin: 0; display: grid; gap: 0.25rem; }
+  dd a { text-decoration: none; font-weight: 500; }
+  dd a:hover { text-decoration: underline; }
+  dd small { color: var(--muted); font-size: 0.8rem; }
+  .maps { font-size: 0.9rem; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(1.25rem, 3vw, 2.25rem); }
+  .panel h3 { font-size: var(--step-2); }
+</style>

@@ -1,0 +1,47 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import { formatarTelefone, linkWhatsapp } from '../lib/format';
+import { site } from '../config/site';
+const unidades = await Promise.all(
+  (await getCollection('unidades')).sort((a, b) => Number(b.data.principal) - Number(a.data.principal))
+    .map(async (u) => ({ u, Content: (await render(u)).Content })),
+);
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Onde atendemos', href: '/onde-atendemos/' }];
+---
+<BaseLayout titulo="Onde atendemos" descricao={`Endereço, telefone e como chegar ao consultório em ${site.cidade}.`}>
+  <PageIntro trilha={trilha} eyebrow="Onde atendemos" titulo="Como chegar" />
+  <section class="section">
+    <div class="container">
+      {unidades.map(({ u, Content }) => (
+        <article class="unit">
+          <div>
+            <p class="eyebrow">{u.data.nome}</p>
+            <h2>{u.data.servico ?? u.data.nome}</h2>
+            {u.data.endereco && <p class="addr">{u.data.endereco.logradouro}{u.data.endereco.complemento && `, ${u.data.endereco.complemento}`}<br />{u.data.endereco.bairro} — {u.data.cidade}/{u.data.uf}</p>}
+            <div class="prose"><Content /></div>
+          </div>
+          <dl>
+            {u.data.telefone && <div><dt>Telefone e WhatsApp</dt><dd><a href={`tel:+${u.data.telefone}`}>{formatarTelefone(u.data.telefone)}</a> · <a href={linkWhatsapp(u.data.telefone, site.contato.mensagemWhatsapp)} rel="noopener">WhatsApp</a></dd></div>}
+            {u.data.horarios.length > 0 && <div><dt>Horário</dt><dd>{u.data.horarios.map((h) => <span>{h.dias}: {h.horas}</span>)}</dd></div>}
+            {u.data.comodidades.length > 0 && <div><dt>No local</dt><dd>{u.data.comodidades.map((c) => <span>{c}</span>)}</dd></div>}
+            {u.data.geo && <div><dt>Como chegar</dt><dd><a href={`https://www.google.com/maps/search/?api=1&query=${u.data.geo.lat},${u.data.geo.lng}`} rel="noopener">Google Maps</a><a href={`https://waze.com/ul?ll=${u.data.geo.lat},${u.data.geo.lng}&navigate=yes`} rel="noopener">Waze</a></dd></div>}
+            {u.data.site && <div><dt>Site do centro médico</dt><dd><a href={u.data.site} rel="noopener">{new URL(u.data.site).hostname}</a></dd></div>}
+          </dl>
+        </article>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .unit { display: grid; gap: var(--space-4); }
+  @media (min-width: 960px) { .unit { grid-template-columns: 1.1fr 0.9fr; column-gap: var(--space-5); } }
+  h2 { font-size: var(--step-3); }
+  .addr { font-size: var(--step-1); }
+  dl { margin: 0; }
+  dl div { padding-block: 1rem; border-top: 1px solid var(--line); display: grid; gap: 0.3rem; }
+  dt { font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  dd { margin: 0; display: grid; gap: 0.2rem; }
+  dd a { font-weight: 600; }
+</style>

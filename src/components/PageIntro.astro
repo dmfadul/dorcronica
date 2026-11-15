@@ -1,0 +1,19 @@
+---
+import Breadcrumbs from './Breadcrumbs.astro';
+interface Props { titulo: string; eyebrow?: string; lead?: string; trilha: { nome: string; href: string }[]; }
+const { titulo, eyebrow, lead, trilha } = Astro.props;
+---
+<header class="intro">
+  <div class="container">
+    <Breadcrumbs itens={trilha} />
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h1>{titulo}</h1>
+    {lead && <p class="lead">{lead}</p>}
+    <slot />
+  </div>
+</header>
+<style>
+  .intro { padding-block: clamp(2rem, 1.5rem + 3vw, 4.5rem) var(--space-4); border-bottom: 1px solid var(--line); }
+  h1 { font-size: var(--step-4); max-width: 20ch; }
+  .lead { max-width: 56ch; margin: 0; }
+</style>

@@ -1,0 +1,41 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { TIPOS_DE_DOR } from '../lib/regioes';
+interface Props { condicoes: CollectionEntry<'condicoes'>[]; colunas?: boolean; }
+const { condicoes, colunas = false } = Astro.props;
+---
+<ol class:list={['index', { colunas }]} role="list">
+  {condicoes.map((c, i) => (
+    <li>
+      <span class="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+      <h3><a href={`/condicoes/${c.id}/`}>{c.data.curto ?? c.data.titulo}</a></h3>
+      <p>{c.data.resumo}</p>
+      <span class="tipo">{TIPOS_DE_DOR[c.data.tipo].nome}</span>
+    </li>
+  ))}
+</ol>
+<style>
+  .index { list-style: none; margin: 0; padding: 0; }
+  li {
+    position: relative; display: grid; align-items: baseline;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto; gap: 0.3rem 1.25rem;
+    padding: 1.4rem 0.25rem; border-top: 1px solid var(--line);
+    transition: background-color .2s ease;
+  }
+  li:hover { background: var(--surface); }
+  .num { font: 400 1rem/1 var(--font-serif); color: var(--gold); font-variant-numeric: tabular-nums; }
+  h3 { font-size: var(--step-2); margin: 0; }
+  h3 a { text-decoration: none; }
+  h3 a::after { content: ''; position: absolute; inset: 0; }
+  li:hover h3 a { text-decoration: underline; text-decoration-thickness: 1px; }
+  p { grid-column: 2 / 4; margin: 0; color: var(--ink-soft); max-width: 62ch; }
+  .tipo { grid-row: 1; grid-column: 3; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .index:not(.colunas) li:last-child { border-bottom: 1px solid var(--line); }
+  @media (min-width: 900px) {
+    .index:not(.colunas) li { grid-template-columns: 3.5rem minmax(0, 1fr) minmax(0, 1.1fr) 7rem; padding-block: 1.7rem; }
+    .index:not(.colunas) p { grid-column: 3; grid-row: 1; }
+    .index:not(.colunas) .tipo { grid-column: 4; text-align: right; }
+    .colunas { display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--space-4); }
+    .colunas p { font-size: 0.95rem; }
+  }
+</style>

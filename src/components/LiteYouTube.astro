@@ -1,0 +1,38 @@
+---
+/**
+ * Vídeo do YouTube "leve": só uma imagem e um botão até o clique.
+ * Não carrega nada do YouTube (nem cookies) antes de o visitante pedir.
+ */
+interface Props { id: string; titulo: string; }
+const { id, titulo } = Astro.props;
+---
+<div class="lyt" data-yt={id}>
+  <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt="" loading="lazy" width="480" height="360" />
+  <button type="button" aria-label={`Reproduzir: ${titulo}`}>
+    <svg viewBox="0 0 68 48" aria-hidden="true"><path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.3 34 .3 34 .3s-21.2 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6C12.8 47.7 34 47.7 34 47.7s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3Z" fill="currentColor"/><path d="m27 34 18-10-18-10z" fill="#fff"/></svg>
+  </button>
+  <a class="fallback" href={`https://www.youtube.com/watch?v=${id}`} rel="noopener">Assistir no YouTube</a>
+</div>
+<script is:inline>
+  document.querySelectorAll('[data-yt]').forEach(function (el) {
+    var b = el.querySelector('button');
+    if (!b || el.dataset.ready) return; el.dataset.ready = '1';
+    b.addEventListener('click', function () {
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + el.dataset.yt + '?autoplay=1&rel=0';
+      f.title = b.getAttribute('aria-label');
+      f.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+      f.allowFullscreen = true;
+      el.innerHTML = ''; el.appendChild(f); el.classList.add('playing');
+    });
+  });
+</script>
+<style>
+  .lyt { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: var(--radius); overflow: hidden; }
+  .lyt img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: opacity .2s ease; }
+  .lyt:hover img { opacity: 1; }
+  .lyt button { position: absolute; inset: 0; display: grid; place-items: center; background: none; border: 0; cursor: pointer; color: #c4302b; }
+  .lyt button svg { width: 72px; height: 50px; filter: drop-shadow(0 4px 12px rgb(0 0 0 / .4)); }
+  .lyt :global(iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .fallback { position: absolute; right: 0.75rem; bottom: 0.6rem; color: #fff; font-size: 0.8rem; }
+</style>

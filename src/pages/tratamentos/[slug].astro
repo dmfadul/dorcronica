@@ -1,0 +1,79 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import MedicalNote from '../../components/MedicalNote.astro';
+import FaqList from '../../components/FaqList.astro';
+import Icon from '../../components/Icon.astro';
+import { site, whatsappPrincipal } from '../../config/site';
+import { linkWhatsapp } from '../../lib/format';
+import { breadcrumbs, grafo, faqPage } from '../../lib/jsonld';
+
+export async function getStaticPaths() {
+  return (await getCollection('tratamentos')).map((t) => ({ params: { slug: t.id }, props: { t } }));
+}
+const { t } = Astro.props;
+const { Content } = await render(t);
+const condicoes = (await getCollection('condicoes', (c) => c.data.tratamentos.some((r) => r.id === t.id)))
+  .sort((a, b) => a.data.ordem - b.data.ordem);
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Tratamentos', href: '/tratamentos/' }, { nome: t.data.titulo, href: `/tratamentos/${t.id}/` }];
+const faq = t.data.perguntas.map((q) => ({ pergunta: q.p, resposta: q.r }));
+const fichaRotulos: Record<string, string> = { anestesia: 'Anestesia', guia: 'Guiado por', duracao: 'Duração', alta: 'Alta', retorno: 'Retorno' };
+const ficha = Object.entries(t.data.ficha ?? {}).filter(([, v]) => v);
+const jsonld = grafo(
+  {
+    '@type': 'MedicalWebPage', name: t.data.titulo, description: t.data.resumo, inLanguage: 'pt-BR',
+    url: new URL(`/tratamentos/${t.id}/`, Astro.site).href,
+    about: { '@type': t.data.etapa === 'Procedimento' ? 'TherapeuticProcedure' : 'MedicalTherapy', name: t.data.titulo },
+  },
+  faq.length > 0 && faqPage(faq),
+  breadcrumbs(trilha, Astro.site!),
+);
+---
+<BaseLayout titulo={t.data.seoTitulo ?? `${t.data.titulo} — tratamento da dor em ${site.cidade}`} descricao={t.data.seoDescricao ?? t.data.resumo} jsonld={jsonld}>
+  <PageIntro trilha={trilha} eyebrow={t.data.etapa} titulo={t.data.titulo} lead={t.data.resumo} />
+  <div class="container section layout">
+    <article>
+      {ficha.length > 0 && (
+        <dl class="ficha">
+          {ficha.map(([k, v]) => <div><dt>{fichaRotulos[k]}</dt><dd>{v}</dd></div>)}
+        </dl>
+      )}
+      <div class="prose">
+        <Content />
+        {t.data.itens.length > 0 && (<><h2>O que inclui</h2><ul>{t.data.itens.map((i) => <li>{i}</li>)}</ul></>)}
+      </div>
+      {faq.length > 0 && <div class="faq-wrap"><h2>Perguntas comuns</h2><FaqList itens={faq} /></div>}
+      <MedicalNote />
+    </article>
+    <aside class="side">
+      {condicoes.length > 0 && (
+        <div class="box">
+          <p class="eyebrow">Pode ser indicado em</p>
+          <ul>{condicoes.map((c) => <li><a href={`/condicoes/${c.id}/`}>{c.data.curto ?? c.data.titulo}</a></li>)}</ul>
+        </div>
+      )}
+      <a class="btn" href={linkWhatsapp(whatsappPrincipal.numero, site.contato.mensagemWhatsapp)} rel="noopener"><Icon nome="whatsapp" /> Agendar consulta</a>
+      <p class="note">Todo procedimento é indicado após consulta e discutido com o paciente.</p>
+    </aside>
+  </div>
+</BaseLayout>
+<style>
+  .layout { display: grid; gap: var(--space-4); }
+  .layout > * { min-width: 0; }
+  .ficha div { min-width: 0; }
+  @media (min-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr) 300px; column-gap: var(--space-5); align-items: start; } }
+  .ficha { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 0; margin: 0 0 var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); max-width: var(--reading); }
+  .ficha div { padding: 1rem 1.1rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .ficha dt { font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
+  .ficha dd { margin: 0; font-size: 0.95rem; }
+  .faq-wrap { margin-top: var(--space-4); max-width: var(--reading); }
+  .faq-wrap h2 { font-size: var(--step-2); }
+  .side { display: grid; gap: var(--space-3); position: sticky; top: calc(var(--header-h) + 1.5rem); }
+  .box { padding-top: 1rem; border-top: 2px solid var(--ink); }
+  .box ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+  .box a { font-weight: 600; }
+  .side .btn { justify-self: start; }
+  .note { font-size: 0.85rem; color: var(--muted); margin: 0; }
+  @media (max-width: 999px) { .side { position: static; } }
+</style>

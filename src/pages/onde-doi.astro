@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import BodyMap from '../components/BodyMap.astro';
+import Alerta from '../components/Alerta.astro';
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Onde dói?', href: '/onde-doi/' }];
+---
+<BaseLayout titulo="Onde dói? Mapa da dor" descricao="Marque no corpo onde você sente dor e veja as condições que costumam envolver essas regiões. Um guia para conversar com o médico.">
+  <PageIntro trilha={trilha} eyebrow="Mapa da dor" titulo="Onde dói?" lead="Marque no desenho as regiões onde você sente dor. Mostramos as condições que costumam envolvê-las — um ponto de partida para a conversa na consulta, não um diagnóstico." />
+  <section class="section">
+    <div class="container">
+      <BodyMap idBase="mapa" />
+      <div class="alert"><Alerta /></div>
+    </div>
+  </section>
+</BaseLayout>
+<style>.alert { margin-top: var(--space-5); }</style>

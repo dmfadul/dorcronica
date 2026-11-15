@@ -1,0 +1,17 @@
+- id: e-agora-doutor-24
+  titulo: "E agora, Doutor? #24 — Dor crônica"
+  formato: Podcast
+  veiculo: Eco Medical Center
+  data: 2025-09-22
+  url: https://www.youtube.com/watch?v=M698nWEgM4I
+  youtubeId: M698nWEgM4I
+  duracao: 1h07
+  resumo: Com a Dra. Andresa Baiak. O que é dor crônica primária, as diferenças entre dor nociceptiva, neuropática e nociplástica, quando procurar um médico da dor, como são os procedimentos e por que tratar cedo faz diferença.
+  topicos:
+    - Dor crônica primária e dor neuropática
+    - Existe cura ou só controle?
+    - Exames de imagem no diagnóstico
+    - Repouso x atividade física
+    - Herpes-zóster e enxaqueca
+    - Fatores de risco para cronificação
+  participantes: [alberto-fadul]

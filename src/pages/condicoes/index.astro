@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import ConditionIndex from '../../components/ConditionIndex.astro';
+import { TIPOS_DE_DOR, type TipoDeDor } from '../../lib/regioes';
+import { breadcrumbs, grafo } from '../../lib/jsonld';
+
+const condicoes = (await getCollection('condicoes')).sort((a, b) => a.data.ordem - b.data.ordem);
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'O que tratamos', href: '/condicoes/' }];
+const tipos = Object.keys(TIPOS_DE_DOR) as TipoDeDor[];
+---
+<BaseLayout
+  titulo="Condições que tratamos"
+  descricao="Lombalgia e ciática, dor cervical, cefaleias, dor neuropática, herpes-zóster, fibromialgia, artrose, dor oncológica, dor pélvica e mais: como cada condição é avaliada e tratada."
+  jsonld={grafo(breadcrumbs(trilha, Astro.site!))}
+>
+  <PageIntro
+    trilha={trilha}
+    eyebrow="O que tratamos"
+    titulo="Condições que acompanhamos"
+    lead="A lista não é exaustiva. Se a dor dura mais de três meses — ou se, mesmo recente, está atrapalhando o sono, o trabalho e a rotina — ela merece avaliação."
+  >
+    <p class="map-link"><a class="link-arrow" href="/onde-doi/">Prefere começar pelo lugar onde dói? Use o mapa do corpo</a></p>
+  </PageIntro>
+  <section class="section">
+    <div class="container">
+      <ConditionIndex condicoes={condicoes} />
+      <div class="legend">
+        <p class="eyebrow">Sobre os tipos de dor</p>
+        <dl>
+          {tipos.map((t) => <div><dt>{TIPOS_DE_DOR[t].nome}</dt><dd>{TIPOS_DE_DOR[t].curta}</dd></div>)}
+        </dl>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .map-link { margin-top: var(--space-3); }
+  .legend { margin-top: var(--space-5); }
+  dl { display: grid; gap: 1rem 2rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 0; }
+  dt { font: 500 var(--step-1)/1.3 var(--font-serif); }
+  dd { margin: 0.2rem 0 0; color: var(--ink-soft); font-size: 0.95rem; }
+</style>

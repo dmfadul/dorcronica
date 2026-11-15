@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import { site } from '../config/site';
+const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Privacidade', href: '/privacidade/' }];
+---
+<BaseLayout titulo="Política de privacidade" descricao="Como este site trata dados pessoais.">
+  <PageIntro trilha={trilha} titulo="Política de privacidade" lead="Versão inicial — revisar com assessoria jurídica antes da publicação." />
+  <section class="section">
+    <div class="container prose">
+      <h2>O que este site coleta</h2>
+      <p>Este site não possui cadastro, não armazena formulários e não utiliza cookies de rastreamento ou publicidade.</p>
+      <p>O formulário de pré-agendamento apenas monta uma mensagem no seu próprio navegador e abre o WhatsApp. Nada é enviado a servidores deste site: a mensagem só é transmitida se você decidir enviá-la, pelo aplicativo.</p>
+      <h2>Dados de saúde</h2>
+      <p>Dados de saúde são dados pessoais sensíveis (Lei 13.709/2018 — LGPD). Pedimos que você não envie exames, laudos ou descrições detalhadas pelo WhatsApp antes da consulta. Essas informações são tratadas no atendimento, sob sigilo médico.</p>
+      <h2>Hospedagem</h2>
+      <p>O provedor de hospedagem pode registrar dados técnicos de acesso (como endereço IP) por motivos de segurança, conforme a legislação.</p>
+      <h2>Contato</h2>
+      <p>Dúvidas sobre privacidade: <a href={`mailto:${site.contato.email}`}>{site.contato.email}</a>.</p>
+    </div>
+  </section>
+</BaseLayout>

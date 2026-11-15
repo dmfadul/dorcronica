@@ -1,0 +1,99 @@
+---
+import { getCollection } from 'astro:content';
+import { whatsappPrincipal, site } from '../config/site';
+import Icon from './Icon.astro';
+
+/**
+ * Formulário de pré-agendamento que monta uma mensagem e abre o WhatsApp.
+ * Decisão: nenhum dado de paciente passa por servidor nosso (LGPD: dado de saúde é
+ * dado sensível). Sem JS, o formulário abre a conversa com a mensagem padrão.
+ */
+const condicoes = (await getCollection('condicoes')).sort((a, b) => a.data.ordem - b.data.ordem);
+---
+<form class="wa-form" action={`https://wa.me/${whatsappPrincipal.numero}`} method="get" data-wa={whatsappPrincipal.numero} novalidate>
+  <input type="hidden" name="text" value={site.contato.mensagemWhatsapp} />
+  <div class="field">
+    <label for="wa-nome">Seu nome</label>
+    <input id="wa-nome" name="nome" autocomplete="name" required minlength="2" />
+    <p class="err" id="wa-nome-err" hidden>Informe seu nome para continuarmos.</p>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label for="wa-motivo">Motivo do contato</label>
+      <select id="wa-motivo" name="motivo">
+        <option>Agendar primeira consulta</option>
+        <option>Agendar retorno</option>
+        <option>Dúvida sobre procedimento</option>
+        <option>Outro assunto</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="wa-periodo">Melhor período</label>
+      <select id="wa-periodo" name="periodo">
+        <option>Indiferente</option>
+        <option>Manhã</option>
+        <option>Tarde</option>
+      </select>
+    </div>
+  </div>
+  <div class="field">
+    <label for="wa-condicao">Sobre o que é <span class="opt">(opcional)</span></label>
+    <select id="wa-condicao" name="condicao">
+      <option value="">Prefiro conversar na consulta</option>
+      {condicoes.map((c) => <option>{c.data.titulo}</option>)}
+      <option>Outra dor</option>
+    </select>
+  </div>
+  <button class="btn" type="submit"><Icon nome="whatsapp" /> Continuar no WhatsApp</button>
+  <p class="hint">Abre uma conversa com a mensagem pronta para você revisar antes de enviar. Não compartilhe exames ou detalhes de saúde por aqui — isso fica para a consulta.</p>
+</form>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('form[data-wa]').forEach((form) => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      const nome = String(f.get('nome') ?? '').trim();
+      const err = form.querySelector<HTMLElement>('#wa-nome-err');
+      const input = form.querySelector<HTMLInputElement>('#wa-nome');
+      if (nome.length < 2) {
+        err?.removeAttribute('hidden');
+        input?.setAttribute('aria-invalid', 'true');
+        input?.setAttribute('aria-describedby', 'wa-nome-err');
+        input?.focus();
+        return;
+      }
+      err?.setAttribute('hidden', '');
+      input?.removeAttribute('aria-invalid');
+      const linhas = [
+        `Olá! Meu nome é ${nome}.`,
+        `Motivo: ${f.get('motivo')}.`,
+        f.get('condicao') ? `Assunto: ${f.get('condicao')}.` : '',
+        `Melhor período: ${f.get('periodo')}.`,
+      ].filter(Boolean);
+      const url = `https://wa.me/${form.dataset.wa}?text=${encodeURIComponent(linhas.join('\n'))}`;
+      // Gancho para analytics futuro, sem acoplar a nenhum fornecedor.
+      window.dispatchEvent(new CustomEvent('lead', { detail: { canal: 'whatsapp', origem: location.pathname } }));
+      window.open(url, '_blank', 'noopener');
+    });
+  });
+</script>
+
+<style>
+  .wa-form { display: grid; gap: 1.1rem; }
+  .row { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .field { display: grid; gap: 0.4rem; min-width: 0; }
+  select { width: 100%; min-width: 0; text-overflow: ellipsis; }
+  label { font-weight: 600; font-size: 0.93rem; }
+  .opt { font-weight: 400; color: var(--muted); }
+  input, select {
+    font: inherit; color: var(--ink); background: var(--surface);
+    min-height: 48px; padding: 0.6rem 0.8rem;
+    border: 1px solid #c9bfae; border-radius: var(--radius);
+  }
+  input:focus-visible, select:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; border-color: var(--focus); }
+  input[aria-invalid='true'] { border-color: var(--danger-ink); }
+  .err { margin: 0; color: var(--danger-ink); font-size: 0.88rem; }
+  .btn { justify-self: start; }
+  .hint { margin: 0; font-size: 0.85rem; color: var(--muted); max-width: 52ch; }
+</style>

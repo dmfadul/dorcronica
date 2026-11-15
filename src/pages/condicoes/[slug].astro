@@ -1,0 +1,158 @@
+---
+import { getCollection, getEntries, getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import ArticleList from '../../components/ArticleList.astro';
+import MedicalNote from '../../components/MedicalNote.astro';
+import FaqList from '../../components/FaqList.astro';
+import Alerta from '../../components/Alerta.astro';
+import Icon from '../../components/Icon.astro';
+import { site, whatsappPrincipal } from '../../config/site';
+import { linkWhatsapp, dataLonga, nomeCompleto, credencial } from '../../lib/format';
+import { REGIOES, TIPOS_DE_DOR } from '../../lib/regioes';
+import { breadcrumbs, grafo, faqPage } from '../../lib/jsonld';
+
+export async function getStaticPaths() {
+  const condicoes = await getCollection('condicoes');
+  return condicoes.map((c) => ({ params: { slug: c.id }, props: { condicao: c } }));
+}
+
+const { condicao } = Astro.props;
+const { Content } = await render(condicao);
+const d = condicao.data;
+const tratamentos = await getEntries(d.tratamentos);
+const artigos = (await getCollection('artigos', (a) => !a.data.rascunho && a.data.condicoes.some((r) => r.id === condicao.id)))
+  .sort((a, b) => b.data.publicadoEm.valueOf() - a.data.publicadoEm.valueOf());
+const revisor = d.revisadoPor ? await getEntry(d.revisadoPor) : undefined;
+const rt = (await getEntry('profissionais', site.responsavelTecnico))!;
+const todas = (await getCollection('condicoes')).sort((a, b) => a.data.ordem - b.data.ordem);
+const relacionadas = todas
+  .filter((c) => c.id !== condicao.id && c.data.regioes.some((r) => d.regioes.includes(r)))
+  .slice(0, 4);
+const faq = d.perguntas.map((q) => ({ pergunta: q.p, resposta: q.r }));
+
+const url = new URL(`/condicoes/${condicao.id}/`, Astro.site);
+const trilha = [
+  { nome: 'Início', href: '/' },
+  { nome: 'O que tratamos', href: '/condicoes/' },
+  { nome: d.curto ?? d.titulo, href: url.pathname },
+];
+const jsonld = grafo(
+  {
+    '@type': 'MedicalWebPage',
+    url: url.href,
+    name: d.titulo,
+    description: d.seoDescricao ?? d.resumo,
+    inLanguage: 'pt-BR',
+    about: {
+      '@type': 'MedicalCondition',
+      name: d.titulo,
+      alternateName: d.sinonimos.length ? d.sinonimos : undefined,
+      signOrSymptom: d.sintomas.map((s) => ({ '@type': 'MedicalSymptom', name: s })),
+      possibleTreatment: tratamentos.map((t) => ({ '@type': 'MedicalTherapy', name: t.data.titulo })),
+    },
+    lastReviewed: d.revisadoEm?.toISOString().slice(0, 10),
+    reviewedBy: revisor ? { '@id': new URL(`/equipe/${revisor.id}/#medico`, Astro.site).href } : undefined,
+  },
+  faq.length > 0 && faqPage(faq),
+  breadcrumbs(trilha, Astro.site!),
+);
+const wa = linkWhatsapp(whatsappPrincipal.numero, `Olá! Gostaria de agendar uma consulta sobre ${(d.curto ?? d.titulo).toLowerCase()}.`);
+---
+<BaseLayout titulo={d.seoTitulo ?? `${d.titulo} — tratamento em ${site.cidade}`} descricao={d.seoDescricao ?? d.resumo} jsonld={jsonld}>
+  <PageIntro trilha={trilha} eyebrow={`Dor ${TIPOS_DE_DOR[d.tipo].nome.toLowerCase()}`} titulo={d.titulo} lead={d.resumo}>
+    <ul class="regions" aria-label="Regiões do corpo envolvidas">
+      {d.regioes.map((r) => <li>{REGIOES[r]}</li>)}
+    </ul>
+  </PageIntro>
+
+  <div class="container layout section">
+    <article>
+      {d.sintomas.length > 0 && (
+        <div class="symptoms">
+          <p class="eyebrow">Como costuma ser descrita</p>
+          <ul>{d.sintomas.map((s) => <li>{s}</li>)}</ul>
+        </div>
+      )}
+      <div class="prose"><Content /></div>
+
+      {d.alerta.length > 0 && <div class="alert-wrap"><Alerta itens={d.alerta} titulo="Sinais que pedem pronto atendimento" /></div>}
+
+      {faq.length > 0 && (
+        <div class="faq-wrap">
+          <h2>Perguntas comuns</h2>
+          <FaqList itens={faq} />
+        </div>
+      )}
+
+      <MedicalNote revisor={revisor && nomeCompleto(revisor.data)} data={d.revisadoEm && dataLonga(d.revisadoEm)} />
+    </article>
+
+    <aside class="side">
+      <div class="box">
+        <p class="eyebrow">Abordagens</p>
+        <ul>{d.abordagens.map((a) => <li>{a}</li>)}</ul>
+      </div>
+      {tratamentos.length > 0 && (
+        <div class="box">
+          <p class="eyebrow">Tratamentos relacionados</p>
+          <ul class="links">{tratamentos.map((t) => <li><a href={`/tratamentos/${t.id}/`}>{t.data.titulo}</a></li>)}</ul>
+        </div>
+      )}
+      <div class="box cta">
+        <a class="btn" href={wa} rel="noopener"><Icon nome="whatsapp" /> Agendar avaliação</a>
+        <a class="link-arrow" href="/preparar-consulta/">Preparar minha consulta</a>
+        <p class="cred">{nomeCompleto(rt.data)} · {credencial(rt.data)}</p>
+      </div>
+    </aside>
+  </div>
+
+  {relacionadas.length > 0 && (
+    <section class="section section--deep">
+      <div class="container">
+        <p class="eyebrow">Na mesma região do corpo</p>
+        <ul class="related" role="list">
+          {relacionadas.map((c) => (
+            <li><a href={`/condicoes/${c.id}/`}><strong>{c.data.curto ?? c.data.titulo}</strong><span>{c.data.resumo}</span></a></li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  {artigos.length > 0 && (
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow">Para ler mais</p>
+        <ArticleList artigos={artigos} />
+      </div>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .regions { list-style: none; padding: 0; margin: var(--space-3) 0 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .regions li { font-size: 0.82rem; padding: 0.3rem 0.7rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+  .layout { display: grid; gap: var(--space-4); }
+  .layout > * { min-width: 0; }
+  @media (min-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr) 320px; column-gap: var(--space-5); align-items: start; } }
+  .symptoms { margin-bottom: var(--space-4); padding: 1.25rem 1.4rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); max-width: var(--reading); }
+  .symptoms ul { margin: 0; padding-left: 1.1em; display: grid; gap: 0.35rem; }
+  .symptoms li::marker { color: var(--gold); }
+  .alert-wrap, .faq-wrap { margin-top: var(--space-4); max-width: var(--reading); }
+  .faq-wrap h2 { font-size: var(--step-2); }
+  .side { display: grid; gap: var(--space-3); position: sticky; top: calc(var(--header-h) + 1.5rem); }
+  .box { padding-top: 1rem; border-top: 2px solid var(--ink); }
+  .box ul { margin: 0; padding-left: 1.1em; display: grid; gap: 0.4rem; }
+  .box li::marker { color: var(--gold); }
+  .links { list-style: none; padding: 0 !important; }
+  .links a { font-weight: 600; }
+  .cta { display: grid; gap: 0.9rem; justify-items: start; }
+  .cred { font-size: 0.78rem; color: var(--muted); margin: 0; }
+  @media (max-width: 999px) { .side { position: static; } }
+  .related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0 var(--space-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .related a { display: grid; gap: 0.3rem; padding-block: 1rem; border-top: 1px solid var(--line); text-decoration: none; }
+  .related strong { font: 500 var(--step-1)/1.25 var(--font-serif); }
+  .related span { color: var(--ink-soft); font-size: 0.92rem; }
+  .related a:hover strong { text-decoration: underline; }
+</style>

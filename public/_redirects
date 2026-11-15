@@ -1,0 +1,7 @@
+# Cloudflare Pages / Netlify — redirecionamentos 301 das URLs do site antigo.
+/about              /equipe/alberto-fadul/                          301
+/about/             /equipe/alberto-fadul/                          301
+/posts              /artigos/                                       301
+/posts/             /artigos/                                       301
+/posts/:slug        /artigos/:slug/                                 301
+/posts/:slug/       /artigos/:slug/                                 301

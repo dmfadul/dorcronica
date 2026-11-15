@@ -1,0 +1,70 @@
+---
+/** Os três mecanismos da dor — acordeão exclusivo nativo (<details name>), zero JS. */
+import { getCollection } from 'astro:content';
+import { TIPOS_DE_DOR } from '../lib/regioes';
+
+const condicoes = (await getCollection('condicoes')).sort((a, b) => a.data.ordem - b.data.ordem);
+const por = (t: string) => condicoes.filter((c) => c.data.tipo === t);
+
+const tipos = [
+  {
+    id: 'nociceptiva', n: '01',
+    sente: 'Dor em peso, aperto ou pontada, que piora com o movimento ou com a carga e tem um lugar bem definido.',
+    texto: 'É a dor "de alarme": receptores espalhados pelo corpo avisam que um tecido está lesionado ou ameaçado — uma articulação gasta, um músculo sobrecarregado, uma inflamação.',
+  },
+  {
+    id: 'neuropatica', n: '02',
+    sente: 'Queimação, choque, formigamento, frio doloroso — e dor com estímulos que nunca doeram, como o toque da roupa.',
+    texto: 'Aqui o problema está no próprio "fio": uma lesão ou doença do nervo faz com que ele dispare sinais de dor. Não precisa estar cortado — compressão ou inflamação bastam.',
+  },
+  {
+    id: 'nociplastica', n: '03',
+    sente: 'Dor espalhada, que muda de lugar, com cansaço, sono ruim e exames normais.',
+    texto: 'O tecido e os nervos estão íntegros; o que mudou é o processamento. O sistema nervoso passa a amplificar os sinais — a dor é real, e a própria dor virou a doença.',
+  },
+];
+---
+<div class="types">
+  {tipos.map((t, i) => (
+    <details name="tipos-de-dor" open={i === 0}>
+      <summary>
+        <span class="n">{t.n}</span>
+        <span class="nome">Dor {TIPOS_DE_DOR[t.id as keyof typeof TIPOS_DE_DOR].nome.toLowerCase()}</span>
+        <span class="curta">{TIPOS_DE_DOR[t.id as keyof typeof TIPOS_DE_DOR].curta}</span>
+      </summary>
+      <div class="body">
+        <p>{t.texto}</p>
+        <p class="sente"><strong>Como costuma ser sentida:</strong> {t.sente}</p>
+        {por(t.id).length > 0 && (
+          <p class="ex"><span>Exemplos:</span> {por(t.id).map((c, j) => <>{j > 0 && ', '}<a href={`/condicoes/${c.id}/`}>{c.data.curto ?? c.data.titulo}</a></>)}</p>
+        )}
+      </div>
+    </details>
+  ))}
+  <p class="mista">Muitas dores são <strong>mistas</strong> — a lombalgia com ciática, por exemplo, combina componentes nociceptivo e neuropático. Identificar o mecanismo é o primeiro passo da consulta, porque é ele que define o tratamento.</p>
+</div>
+<style>
+  .types { display: grid; }
+  details { border-top: 1px solid rgb(255 255 255 / 0.16); }
+  details:last-of-type { border-bottom: 1px solid rgb(255 255 255 / 0.16); }
+  summary {
+    list-style: none; cursor: pointer; display: grid; gap: 0.2rem 1.25rem; padding: 1.4rem 0;
+    grid-template-columns: 2.5rem 1fr;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; grid-column: 3; grid-row: 1; font: 300 1.6rem/1 var(--font-sans); color: var(--gold-on-navy); transition: transform .2s ease; }
+  details[open] summary::after { transform: rotate(45deg); }
+  summary { grid-template-columns: 2.5rem 1fr auto; }
+  .n { font: 400 1rem/1.6 var(--font-serif); color: var(--gold-on-navy); }
+  .nome { font: 400 var(--step-2)/1.15 var(--font-serif); }
+  .curta { grid-column: 2; color: var(--on-navy-muted); }
+  .body { padding: 0 0 1.6rem 3.75rem; max-width: 70ch; }
+  .body p { color: var(--on-navy); }
+  .sente strong { color: var(--gold-on-navy); font-weight: 600; }
+  .ex { color: var(--on-navy-muted) !important; font-size: 0.95rem; }
+  .ex span { color: var(--on-navy-muted); }
+  .ex a { color: var(--on-navy); }
+  .mista { margin-top: var(--space-3); color: var(--on-navy-muted); max-width: 70ch; }
+  .mista strong { color: var(--on-navy); }
+  @media (max-width: 600px) { .body { padding-left: 0; } }
+</style>
