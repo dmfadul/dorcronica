@@ -1,7 +1,7 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import { site } from '../config/site';
-import { formatarTelefone, credencial, nomeCompleto, especialidadeTexto } from '../lib/format';
+import { formatarTelefone, credencial, nomeRegistroCompleto, especialidadeTexto, enderecoTexto, linkWhatsapp } from '../lib/format';
 
 const rt = await getEntry('profissionais', site.responsavelTecnico);
 const unidades = (await getCollection('unidades')).sort((a, b) => Number(b.data.principal) - Number(a.data.principal));
@@ -16,13 +16,13 @@ const ano = new Date().getFullYear();
         <p class="f-cred">
           {especialidadeTexto(rt.data)}<br />
           {credencial(rt.data)}<br />
-          Responsável técnico: {nomeCompleto(rt.data)}
+          Responsável técnico: {nomeRegistroCompleto(rt.data)}
         </p>
       )}
       {unidades.map((u) => (
         <p class="f-addr">
           <strong>{u.data.servico ?? u.data.nome}</strong>{u.data.servico && <> — {u.data.nome}</>}<br />
-          {u.data.endereco ? <>{u.data.endereco.logradouro} — {u.data.endereco.bairro}, {u.data.cidade}/{u.data.uf}</> : <>{u.data.cidade}/{u.data.uf}</>}
+          {enderecoTexto(u.data)}
         </p>
       ))}
     </div>
@@ -44,7 +44,7 @@ const ano = new Date().getFullYear();
       <p class="f-title">Contato</p>
       <ul>
         {site.contato.telefones.map((t) => (
-          <li><a href={`tel:+${t.numero}`}>{formatarTelefone(t.numero)}</a> <span class="lbl">{t.rotulo}</span></li>
+          <li><a href={t.ligacao ? `tel:+${t.numero}` : linkWhatsapp(t.numero, site.contato.mensagemWhatsapp)} rel={t.ligacao ? undefined : 'noopener'}>{formatarTelefone(t.numero)}</a> <span class="lbl">{t.rotulo}</span></li>
         ))}
         <li><a href={`mailto:${site.contato.email}`}>{site.contato.email}</a></li>
         <li><a href={site.redes.instagramServico} rel="noopener">Instagram da Eco Medicina da Dor</a></li>

@@ -76,6 +76,8 @@ const profissionais = defineCollection({
   schema: ({ image }) =>
     z.object({
       nome: z.string(),
+      /** Nome civil completo, como no CRM e no Perfil da Empresa no Google. */
+      nomeRegistro: z.string().optional(),
       tratamento: z.enum(['Dr.', 'Dra.', '']).default(''),
       profissao: z.string().default('Médico'),
       /** Obrigatório (CFM 2.336/2023, art. 4º). null = pendente e o build avisa. */

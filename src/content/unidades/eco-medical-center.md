@@ -1,15 +1,17 @@
 ---
 nome: Eco Medical Center
-servico: Eco Medicina da Dor
+servico: Dor Crônica
 cidade: Curitiba
 uf: PR
 endereco:
   logradouro: Rua Goiás, 70
   bairro: Água Verde
+  cep: '80620-060'
 geo: { lat: -25.4646473, lng: -49.2905807 }
-telefone: '554131236550'
+telefone: '5541991812004'
 horarios:
-  - { dias: Segunda a sábado, horas: 7h às 19h (funcionamento do centro médico) }
+  - { dias: Segunda a sábado, horas: 9h às 18h }
+  - { dias: Domingo, horas: fechado }
 comodidades:
   - Estacionamento próprio
   - Exames de imagem no mesmo prédio

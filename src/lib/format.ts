@@ -1,6 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
 
-/** 5541995164766 -> (41) 99516-4766 */
+/** 5541991812004 -> (41) 99181-2004 */
 export function formatarTelefone(numero: string): string {
   const local = numero.replace(/^55/, '');
   const ddd = local.slice(0, 2);
@@ -14,6 +14,20 @@ export function linkWhatsapp(numero: string, texto?: string): string {
   return `https://wa.me/${numero}${q}`;
 }
 
+/** "5541991812004" -> "+55 41 99181-2004" */
+export function telefoneInternacional(numero: string): string {
+  return `+55 ${formatarTelefone(numero).replace(/[()]/g, '')}`;
+}
+
+type Unidade = CollectionEntry<'unidades'>['data'];
+
+/** Endereço no formato do Perfil da Empresa no Google: "Rua Goiás, 70, Água Verde, Curitiba – PR, 80620-060". */
+export function enderecoTexto(u: Unidade): string {
+  const e = u.endereco;
+  const rua = e ? [e.logradouro, e.complemento, e.bairro].filter(Boolean).join(', ') + ', ' : '';
+  return `${rua}${u.cidade} – ${u.uf}${e?.cep ? `, ${e.cep}` : ''}`;
+}
+
 const fmtData = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 export const dataLonga = (d: Date) => fmtData.format(d);
 export const dataIso = (d: Date) => d.toISOString().slice(0, 10);
@@ -22,6 +36,11 @@ type Prof = CollectionEntry<'profissionais'>['data'];
 
 export function nomeCompleto(p: Prof): string {
   return [p.tratamento, p.nome].filter(Boolean).join(' ');
+}
+
+/** Nome civil completo (ex.: "Dr. Alberto David Fadul Filho"); cai no nome de uso se não houver. */
+export function nomeRegistroCompleto(p: Prof): string {
+  return [p.tratamento, p.nomeRegistro ?? p.nome].filter(Boolean).join(' ');
 }
 
 /** "19927" -> "19.927" */

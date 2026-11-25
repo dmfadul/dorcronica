@@ -19,11 +19,11 @@ const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Onde atendemos', href: 
           <div>
             <p class="eyebrow">{u.data.nome}</p>
             <h2>{u.data.servico ?? u.data.nome}</h2>
-            {u.data.endereco && <p class="addr">{u.data.endereco.logradouro}{u.data.endereco.complemento && `, ${u.data.endereco.complemento}`}<br />{u.data.endereco.bairro} — {u.data.cidade}/{u.data.uf}</p>}
+            {u.data.endereco && <p class="addr">{u.data.endereco.logradouro}{u.data.endereco.complemento && `, ${u.data.endereco.complemento}`},<br />{u.data.endereco.bairro}, {u.data.cidade} – {u.data.uf}{u.data.endereco.cep && `, ${u.data.endereco.cep}`}</p>}
             <div class="prose"><Content /></div>
           </div>
           <dl>
-            {u.data.telefone && <div><dt>Telefone e WhatsApp</dt><dd><a href={`tel:+${u.data.telefone}`}>{formatarTelefone(u.data.telefone)}</a> · <a href={linkWhatsapp(u.data.telefone, site.contato.mensagemWhatsapp)} rel="noopener">WhatsApp</a></dd></div>}
+            {u.data.telefone && <div><dt>WhatsApp</dt><dd><a href={linkWhatsapp(u.data.telefone, site.contato.mensagemWhatsapp)} rel="noopener">{formatarTelefone(u.data.telefone)}</a></dd></div>}
             {u.data.horarios.length > 0 && <div><dt>Horário</dt><dd>{u.data.horarios.map((h) => <span>{h.dias}: {h.horas}</span>)}</dd></div>}
             {u.data.comodidades.length > 0 && <div><dt>No local</dt><dd>{u.data.comodidades.map((c) => <span>{c}</span>)}</dd></div>}
             {u.data.geo && <div><dt>Como chegar</dt><dd><a href={`https://www.google.com/maps/search/?api=1&query=${u.data.geo.lat},${u.data.geo.lng}`} rel="noopener">Google Maps</a><a href={`https://waze.com/ul?ll=${u.data.geo.lat},${u.data.geo.lng}&navigate=yes`} rel="noopener">Waze</a></dd></div>}

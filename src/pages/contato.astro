@@ -3,10 +3,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import ContactBlock from '../components/ContactBlock.astro';
 import Alerta from '../components/Alerta.astro';
+import { getCollection, getEntry } from 'astro:content';
 import { site } from '../config/site';
+import { clinica, physician, breadcrumbs, grafo } from '../lib/jsonld';
 const trilha = [{ nome: 'Início', href: '/' }, { nome: 'Contato', href: '/contato/' }];
+const rt = (await getEntry('profissionais', site.responsavelTecnico))!;
+const unidades = await getCollection('unidades');
+const jsonld = grafo(clinica(Astro.site!, unidades, rt), physician(rt, Astro.site!), breadcrumbs(trilha, Astro.site!));
 ---
-<BaseLayout titulo="Contato e agendamento" descricao={`Agende sua consulta pelo WhatsApp ou telefone. Atendimento no Eco Medical Center, Água Verde, ${site.cidade}.`}>
+<BaseLayout titulo="Contato e agendamento" descricao={`Agende sua consulta pelo WhatsApp ou telefone. Atendimento no Eco Medical Center, Água Verde, ${site.cidade}.`} jsonld={jsonld}>
   <div class="container crumbs"><Breadcrumbs itens={trilha} /></div>
   <section class="section first"><ContactBlock nivel="h1" /></section>
   <section class="section"><div class="container"><Alerta /></div></section>

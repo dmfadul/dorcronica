@@ -8,13 +8,16 @@
 export const PENDENTE = null;
 
 export type Telefone = {
-  numero: string; // somente dígitos com DDI+DDD: 5541995164766
+  numero: string; // somente dígitos com DDI+DDD: 5541991812004
   rotulo: string;
+  /** Recebe mensagens no WhatsApp (link wa.me). */
   whatsapp: boolean;
+  /** Recebe ligações (link tel:). */
+  ligacao: boolean;
 };
 
 export const site = {
-  nome: 'Dr. Alberto Fadul',
+  nome: 'Dor Crônica',
   servico: 'Medicina da Dor',
   descricao:
     'Dr. Alberto Fadul, anestesiologista com área de atuação em Dor, em Curitiba. Diagnóstico e tratamento da dor crônica: lombalgia, dor neuropática, cefaleias, fibromialgia, herpes-zóster e mais.',
@@ -26,15 +29,22 @@ export const site = {
   responsavelTecnico: 'alberto-fadul',
 
   contato: {
-    email: 'adfadul@gmail.com.br',
+    email: 'adfadul@gmail.com',
     /** O primeiro com whatsapp: true é o canal principal de agendamento. */
     telefones: [
-      { numero: '5541995164766', rotulo: 'WhatsApp do consultório', whatsapp: true },
-      { numero: '554131236550', rotulo: 'Central do Eco Medical Center (ligação e WhatsApp)', whatsapp: true },
-      { numero: '5541991812004', rotulo: 'Celular', whatsapp: false },
-      { numero: '5541991771979', rotulo: 'Celular', whatsapp: false },
+      { numero: '5541991812004', rotulo: 'WhatsApp do consultório', whatsapp: true, ligacao: false },
+      { numero: '554131236550', rotulo: 'Central do Eco Medical Center (somente ligação)', whatsapp: false, ligacao: true },
     ] satisfies Telefone[],
+    /** Telefone principal — igual ao Perfil da Empresa no Google (usado no JSON-LD). */
+    telefonePrincipal: '5541991812004',
     mensagemWhatsapp: 'Olá! Gostaria de agendar uma consulta com o Dr. Alberto Fadul.',
+  },
+
+  /** Horário de atendimento — igual ao Perfil da Empresa no Google. Domingo: fechado. */
+  horario: {
+    dias: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    abre: '09:00',
+    fecha: '18:00',
   },
 
   redes: {

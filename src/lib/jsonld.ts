@@ -1,6 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
 import { site } from '../config/site';
-import { nomeCompleto } from './format';
+import { nomeCompleto, nomeRegistroCompleto, telefoneInternacional } from './format';
 
 /** Dados estruturados (schema.org) — rich results e leitura por buscadores e IAs. */
 
@@ -8,7 +8,8 @@ export function physician(p: CollectionEntry<'profissionais'>, siteUrl: URL, fot
   return {
     '@type': 'Physician',
     '@id': new URL(`/equipe/${p.id}/#medico`, siteUrl).href,
-    name: nomeCompleto(p.data),
+    name: nomeRegistroCompleto(p.data),
+    alternateName: nomeCompleto(p.data),
     url: new URL(`/equipe/${p.id}/`, siteUrl).href,
     image: fotoUrl,
     medicalSpecialty: ['Anesthesia', 'PainMedicine'],
@@ -25,22 +26,40 @@ export function physician(p: CollectionEntry<'profissionais'>, siteUrl: URL, fot
   };
 }
 
-export function clinica(siteUrl: URL, unidades: CollectionEntry<'unidades'>[]) {
+/** MedicalClinic (subtipo de LocalBusiness) — nome, endereço, telefone e horário iguais ao Perfil da Empresa no Google. */
+export function clinica(siteUrl: URL, unidades: CollectionEntry<'unidades'>[], rt?: CollectionEntry<'profissionais'>) {
   const u = unidades.find((x) => x.data.principal) ?? unidades[0];
+  const e = u?.data.endereco;
   return {
     '@type': 'MedicalClinic',
     '@id': new URL('/#clinica', siteUrl).href,
-    name: `${site.nome} — ${site.servico}`,
+    name: site.nome,
     description: site.descricao,
     url: siteUrl.href,
     email: site.contato.email,
-    telephone: site.contato.telefones.map((t) => `+${t.numero}`),
+    telephone: telefoneInternacional(site.contato.telefonePrincipal),
     medicalSpecialty: 'PainMedicine',
     areaServed: { '@type': 'City', name: site.cidade },
+    openingHoursSpecification: [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: site.horario.dias.map((d) => `https://schema.org/${d}`),
+        opens: site.horario.abre,
+        closes: site.horario.fecha,
+      },
+    ],
+    ...(rt && {
+      employee: {
+        '@type': 'Physician',
+        '@id': new URL(`/equipe/${rt.id}/#medico`, siteUrl).href,
+        name: nomeRegistroCompleto(rt.data),
+      },
+    }),
     ...(u && {
       address: {
         '@type': 'PostalAddress',
-        streetAddress: u.data.endereco?.logradouro,
+        streetAddress: e ? `${u.data.nome} – ${[e.logradouro, e.complemento, e.bairro].filter(Boolean).join(', ')}` : undefined,
+        postalCode: e?.cep,
         addressLocality: u.data.cidade,
         addressRegion: u.data.uf,
         addressCountry: 'BR',

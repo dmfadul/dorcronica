@@ -1,6 +1,6 @@
 # dorcronica.org — v2 (protótipo local)
 
-Site do **Dr. Alberto Fadul** — anestesiologista com área de atuação em Dor (CRM-PR 26.704 · RQE 19.927 e 668), Curitiba.
+Site do **Dr. Alberto Fadul** — anestesiologista com área de atuação em Dor (CRM-PR 26.704 · RQE 668), Curitiba.
 Reconstruído do zero sobre um modelo de conteúdo que escala: de um médico para uma clínica com equipe,
 várias unidades e centenas de páginas, **sem reescrever templates**.
 
@@ -32,10 +32,10 @@ As ferramentas conversam entre si: o que o paciente marca no mapa vira o ponto d
 
 | Dado | Fonte |
 |---|---|
-| CRM-PR 26.704 · RQE 19.927 e 668 | descrição do podcast "E agora, Doutor?" #24 (YouTube, Eco Medical Center) e Doctoralia |
+| CRM-PR 26.704 · RQE 668 | descrição do podcast "E agora, Doutor?" #24 (YouTube, Eco Medical Center) e Doctoralia |
 | Anestesiologista com atuação em Dor; responsável pelo Serviço de Dor do HC-UFPR; supervisor da residência em Anestesiologia do HUE Mackenzie | dralbertofadul.com.br e Doctoralia |
 | Supervisiona a residência em Dor do HC-UFPR; coordena a Eco Medicina da Dor; serviço criado com anestesiologia, clínica médica, neurologia, neurocirurgia e radiologia | falas do próprio médico no podcast #24 |
-| Eco Medical Center, Rua Goiás 70, Água Verde; (41) 3123-6550; seg.–sáb. 7h–19h | ecomedicalcenter.com.br |
+| Eco Medical Center – Rua Goiás, 70, Água Verde, Curitiba – PR, 80620-060; WhatsApp (41) 99181-2004; central do Eco (41) 3123-6550 (ligação); seg.–sáb. 9h–18h | Perfil da Empresa no Google (fonte de verdade) |
 | Condições tratadas, teleconsulta | Doctoralia |
 | As três citações do médico | transcrição do podcast #24 (com link para a fonte) |
 
@@ -72,11 +72,7 @@ referência a tratamento que não existe ou resumo longo demais **quebram o buil
 O build lista os avisos. `STRICT_CONTENT=1 npm run build` falha se houver pendência obrigatória.
 
 - [ ] **Revisão médica** dos 21 textos de condições e tratamentos (preencher `revisadoEm` / `revisadoPor`) — escritos a partir de fontes públicas e da fala do médico, mas precisam do aval dele
-- [ ] Confirmar qual RQE corresponde a Anestesiologia e qual à área de atuação em Dor (hoje exibidos juntos, como o próprio médico publica)
 - [ ] Confirmar se os vínculos (HC-UFPR, HUE Mackenzie, Eco) estão atuais
-- [ ] Canal principal de agendamento: hoje o WhatsApp (41) 99516-4766 é o primário e a central do Eco (41) 3123-6550 a alternativa — ou o contrário?
-- [ ] O consultório antigo do "Centro de Estudo da Dor" (Rua Paulo Graeser Sobrinho, 270, sala 29 — (41) 3072-7272 / 99697-3999) ainda atende? Se sim, vira uma 2ª unidade (um arquivo)
-- [ ] E-mail: `adfadul@gmail.com.br` (site atual) ou `contato@dralbertofadul.com.br` (site antigo)?
 - [ ] Autorização do médico para as citações do podcast e do Eco para o uso da miniatura do episódio
 - [ ] Autorização escrita do depoimento de P.M.
 - [ ] Revisão jurídica da página de privacidade

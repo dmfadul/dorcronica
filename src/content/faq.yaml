@@ -42,7 +42,7 @@
   tema: Consulta
   ordem: 8
   pergunta: O atendimento é por convênio?
-  resposta: Pergunte ao agendar. As condições de atendimento particular e a cobertura de procedimentos por planos de saúde variam caso a caso, e a equipe informa antes da consulta.
+  resposta: Não. O atendimento é exclusivamente particular.
 - id: procedimento-doi
   tema: Procedimentos
   ordem: 9

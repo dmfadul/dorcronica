@@ -1,14 +1,14 @@
 ---
 import { getCollection } from 'astro:content';
 import { site, whatsappPrincipal } from '../config/site';
-import { formatarTelefone, linkWhatsapp } from '../lib/format';
+import { formatarTelefone, linkWhatsapp, enderecoTexto } from '../lib/format';
 import WhatsAppForm from './WhatsAppForm.astro';
 import Icon from './Icon.astro';
 
 interface Props { titulo?: string; nivel?: 'h1' | 'h2'; }
 const { titulo = 'Vamos conversar sobre a sua dor', nivel: H = 'h2' } = Astro.props;
 const unidades = (await getCollection('unidades')).sort((a, b) => Number(b.data.principal) - Number(a.data.principal));
-const outros = site.contato.telefones.filter((t) => t !== whatsappPrincipal);
+const outros = site.contato.telefones.filter((t) => t.ligacao);
 const mapa = (u: (typeof unidades)[number]) =>
   u.data.geo ? `https://www.google.com/maps/search/?api=1&query=${u.data.geo.lat},${u.data.geo.lng}` : undefined;
 const waze = (u: (typeof unidades)[number]) =>
@@ -26,7 +26,7 @@ const waze = (u: (typeof unidades)[number]) =>
         <dd><a href={linkWhatsapp(whatsappPrincipal.numero, site.contato.mensagemWhatsapp)} rel="noopener">{formatarTelefone(whatsappPrincipal.numero)}</a></dd>
       </div>
       <div>
-        <dt><Icon nome="telefone" /> Telefones</dt>
+        <dt><Icon nome="telefone" /> Telefone</dt>
         <dd>{outros.map((t) => <span><a href={`tel:+${t.numero}`}>{formatarTelefone(t.numero)}</a> <small>{t.rotulo}</small></span>)}</dd>
       </div>
       <div>
@@ -39,7 +39,7 @@ const waze = (u: (typeof unidades)[number]) =>
           <dd>
             <strong>{u.data.servico ?? u.data.nome}</strong>
             {u.data.servico && <span>{u.data.nome}</span>}
-            {u.data.endereco && <span>{u.data.endereco.logradouro} — {u.data.endereco.bairro}, {u.data.cidade}/{u.data.uf}</span>}
+            <span>{enderecoTexto(u.data)}</span>
             {u.data.horarios.map((h) => <span class="muted">{h.dias}: {h.horas}</span>)}
             {mapa(u) && <span class="maps"><a href={mapa(u)} rel="noopener">Google Maps</a> · <a href={waze(u)} rel="noopener">Waze</a></span>}
           </dd>

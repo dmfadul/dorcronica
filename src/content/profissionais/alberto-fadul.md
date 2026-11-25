@@ -1,11 +1,11 @@
 ---
 nome: Alberto Fadul
+nomeRegistro: Alberto David Fadul Filho
 tratamento: Dr.
 profissao: Médico
 crm: { numero: '26704', uf: PR }
-# Como publicado pelo próprio médico e pelo Eco Medical Center: "RQE 19.927 e 668".
 especialidades: [Anestesiologia, Área de atuação em Dor]
-rqes: ['19927', '668']
+rqes: ['668']
 vinculos:
   - { cargo: Responsável pelo Serviço de Dor, instituicao: Hospital de Clínicas da UFPR }
   - { cargo: Supervisor da Residência Médica em Dor, instituicao: Hospital de Clínicas da UFPR }
@@ -27,7 +27,7 @@ citacoes:
     url: https://www.youtube.com/watch?v=M698nWEgM4I
 ordem: 1
 seoTitulo: Dr. Alberto Fadul — Anestesiologista, área de atuação em Dor
-seoDescricao: Dr. Alberto Fadul (CRM-PR 26.704 · RQE 19.927 e 668), responsável pelo Serviço de Dor do HC-UFPR e coordenador da Eco Medicina da Dor, em Curitiba.
+seoDescricao: Dr. Alberto Fadul (CRM-PR 26.704 · RQE 668), responsável pelo Serviço de Dor do HC-UFPR e coordenador da Eco Medicina da Dor, em Curitiba.
 ---
 
 ## Trajetória

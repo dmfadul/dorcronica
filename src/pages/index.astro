@@ -28,7 +28,7 @@ const unidades = await getCollection('unidades');
 const wa = linkWhatsapp(whatsappPrincipal.numero, site.contato.mensagemWhatsapp);
 const [citacaoPrincipal, ...outrasCitacoes] = rt.data.citacoes;
 
-const jsonld = grafo(clinica(Astro.site!, unidades), physician(rt, Astro.site!), faqPage(faq));
+const jsonld = grafo(clinica(Astro.site!, unidades, rt), physician(rt, Astro.site!), faqPage(faq));
 ---
 <BaseLayout titulo={`${site.nome} — ${site.servico} em ${site.cidade}`} descricao={site.descricao} jsonld={jsonld}>
   <!-- 1. Abertura -->
